@@ -2,7 +2,7 @@
 
 Revisão local 1.3, 11/11/2026. A pasta contém o dicionário baseado no DDL, o PDF da AT2 enviado pelo grupo e o DER exportado pelo MySQL Workbench 8.0.47. O DER foi conferido com 19 tabelas, 115 colunas e 21 relacionamentos. A AT2 ainda tem divergências em relação ao DDL; consulte `docs/CONFERENCIA_AT2.md`. Esta versão não deve ser apresentada como documentalmente aprovada até corrigirem o PDF e conferirem os três artefatos.
 
-Site publicado anteriormente: https://carlosjb7.github.io/dicionario-dados-dolly/ . Repositório: https://github.com/carlosjb7/dicionario-dados-dolly . Esta pasta é uma versão local preparada; ainda não foi publicada a revisão atual.
+Site publicado anteriormente: https://valdeir786.github.io/dicionario-dados-dolly/
 
 ## Estrutura
 
