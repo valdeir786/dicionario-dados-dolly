@@ -1,0 +1,175 @@
+erDiagram
+  usuario {
+    INT id_usuario PK
+    VARCHAR_100_ nome
+    VARCHAR_100_ login
+    VARCHAR_255_ senha_hash
+    ENUM__Admin____Gerente____Operador__ perfil
+    TINYINT ativo
+  }
+  cliente {
+    INT id_cliente PK
+    VARCHAR_150_ nome
+    VARCHAR_150_ email
+    VARCHAR_14_ cpf_cnpj
+    VARCHAR_20_ telefone
+    TINYINT consent_lgpd
+    DATETIME data_consentimento
+    TINYINT ativo
+  }
+  endereco {
+    INT id_endereco PK
+    INT id_cliente FK
+    VARCHAR_200_ logradouro
+    VARCHAR_20_ numero
+    VARCHAR_100_ complemento
+    VARCHAR_100_ bairro
+    VARCHAR_100_ cidade
+    CHAR_2_ uf
+    CHAR_8_ cep
+  }
+  fornecedor {
+    INT id_fornecedor PK
+    VARCHAR_150_ razao_social
+    VARCHAR_14_ cnpj
+    VARCHAR_100_ contato
+    TINYINT ativo
+  }
+  categoria {
+    INT id_categoria PK
+    VARCHAR_100_ nome
+    TINYINT ativo
+  }
+  produto {
+    INT id_produto PK
+    INT id_categoria FK
+    INT id_fornecedor FK
+    VARCHAR_200_ descricao
+    DECIMAL_10_2_ preco_tabela
+    INT saldo_estoque
+    TINYINT ativo
+  }
+  lote {
+    INT id_lote PK
+    INT id_produto FK
+    VARCHAR_50_ numero_lote
+    INT quantidade_inicial
+    INT quantidade_atual
+    DATE data_fabricacao
+    DATE data_validade
+  }
+  preco_regiao {
+    INT id_preco_regiao PK
+    INT id_produto FK
+    CHAR_2_ uf
+    DECIMAL_10_2_ preco_vigente
+  }
+  promocao {
+    INT id_promocao PK
+    VARCHAR_150_ descricao
+    DECIMAL_5_2_ percentual_desconto
+    DATE data_inicio
+    DATE data_fim
+    TINYINT ativo
+  }
+  pedido {
+    INT id_pedido PK
+    INT id_cliente FK
+    INT id_usuario FK
+    INT id_endereco FK
+    TIMESTAMP data_hora
+    ENUM__ABERTO____FINALIZADO____CANCELADO__ situacao
+    VARCHAR_50_ forma_pagamento
+    DECIMAL_10_2_ valor_total
+    DECIMAL_10_2_ valor_desconto
+    DATETIME data_cancelamento
+  }
+  item_pedido {
+    INT id_item PK
+    INT id_pedido FK
+    INT id_produto FK
+    INT id_promocao FK
+    INT quantidade
+    DECIMAL_10_2_ preco_unitario_venda
+  }
+  item_pedido_lote {
+    INT id_item_pedido_lote PK
+    INT id_item FK
+    INT id_lote FK
+    INT id_produto FK
+    INT quantidade
+    INT quantidade_estornada
+  }
+  nota_fiscal {
+    INT id_nota_fiscal PK
+    INT id_pedido FK
+    CHAR_44_ chave_acesso
+    DECIMAL_10_2_ valor_total_nf
+    DATETIME data_emissao
+  }
+  conta_receber {
+    INT id_conta PK
+    INT id_pedido FK
+    INT numero_parcela
+    DECIMAL_10_2_ valor_parcela
+    DATE data_vencimento
+    ENUM__PENDENTE____PAGO____CANCELADO__ status_parcela
+  }
+  pagamento {
+    INT id_pagamento PK
+    INT id_pedido FK
+    ENUM__BOLETO____PIX____CARTAO__ forma_pagamento
+    DECIMAL_10_2_ valor_pago
+    ENUM__PENDENTE____CONFIRMADO____CANCELADO____ESTORNADO__ status_pagamento
+    DATETIME data_transacao
+  }
+  entrega {
+    INT id_entrega PK
+    INT id_pedido FK
+    INT id_usuario_motorista FK
+    ENUM__PENDENTE____EM_ROTA____CONCLUIDA__ status_entrega
+    DATE data_prevista
+    DATETIME data_realizada
+  }
+  comprovante_entrega {
+    INT id_comprovante PK
+    INT id_pedido FK
+    TEXT assinatura_digital_canhoto
+    DATETIME data_registro
+  }
+  estorno {
+    INT id_estorno PK
+    INT id_pedido FK
+    TEXT motivo
+    DATETIME data_estorno
+  }
+  log_auditoria {
+    INT id_log PK
+    INT id_usuario FK
+    VARCHAR_100_ tabela_afetada
+    VARCHAR_20_ operacao
+    TIMESTAMP data_hora
+    JSON valor_anterior
+    JSON valor_novo
+  }
+  cliente ||--o{ endereco : "R01 fk_endereco_cliente"
+  categoria ||--o{ produto : "R02 fk_produto_categoria"
+  fornecedor ||--o{ produto : "R03 fk_produto_fornecedor"
+  produto ||--o{ lote : "R04 fk_lote_produto"
+  produto ||--o{ preco_regiao : "R05 fk_preco_regiao_produto"
+  cliente ||--o{ pedido : "R06 fk_pedido_cliente"
+  usuario ||--o{ pedido : "R07 fk_pedido_usuario"
+  endereco ||--o{ pedido : "R08 fk_pedido_endereco_cliente"
+  pedido ||--o{ item_pedido : "R09 fk_item_pedido"
+  produto ||--o{ item_pedido : "R10 fk_item_produto"
+  promocao |o--o{ item_pedido : "R11 fk_item_promocao"
+  item_pedido ||--o{ item_pedido_lote : "R12 fk_alocacao_item"
+  lote ||--o{ item_pedido_lote : "R13 fk_alocacao_lote"
+  pedido ||--o| nota_fiscal : "R14 fk_nf_pedido"
+  pedido ||--o{ conta_receber : "R15 fk_conta_pedido"
+  pedido ||--o{ pagamento : "R16 fk_pagamento_pedido"
+  pedido ||--o| entrega : "R17 fk_entrega_pedido"
+  usuario ||--o{ entrega : "R18 fk_entrega_motorista"
+  entrega ||--o| comprovante_entrega : "R19 fk_comprovante_entrega"
+  pedido ||--o| estorno : "R20 fk_estorno_pedido"
+  usuario ||--o{ log_auditoria : "R21 fk_log_usuario"

@@ -1,0 +1,1916 @@
+[
+  {
+    "name": "usuario",
+    "columns": [
+      {
+        "name": "id_usuario",
+        "type": "INT",
+        "definition": "NOT NULL AUTO_INCREMENT",
+        "description": "Identificador técnico do registro.",
+        "privacy": "DP",
+        "privacyNote": "Classificação conservadora por vínculo direto ou indireto com pessoa natural; confirmar contexto B2B.",
+        "lineage": "Origem proposta: geração MySQL (AUTO_INCREMENT). Destino estrutural: pedido.id_usuario, entrega.id_usuario_motorista, log_auditoria.id_usuario.",
+        "rbac": "Admin: gestão; Gerente: identificação; Operador: próprio cadastro"
+      },
+      {
+        "name": "nome",
+        "type": "VARCHAR(100)",
+        "definition": "NOT NULL",
+        "description": "Nome cadastral.",
+        "privacy": "DP",
+        "privacyNote": "Classificação conservadora por vínculo direto ou indireto com pessoa natural; confirmar contexto B2B.",
+        "lineage": "Origem proposta: Administração de identidades. Destino estrutural: usuario (persistência; consumo não documentado).",
+        "rbac": "Admin: gestão; Gerente: identificação; Operador: próprio cadastro"
+      },
+      {
+        "name": "login",
+        "type": "VARCHAR(100)",
+        "definition": "NOT NULL",
+        "description": "Identificador de autenticação único.",
+        "privacy": "DP",
+        "privacyNote": "Classificação conservadora por vínculo direto ou indireto com pessoa natural; confirmar contexto B2B.",
+        "lineage": "Origem proposta: Administração de identidades. Destino estrutural: usuario (persistência; consumo não documentado).",
+        "rbac": "Admin: gestão; Gerente: identificação; Operador: próprio cadastro"
+      },
+      {
+        "name": "senha_hash",
+        "type": "VARCHAR(255)",
+        "definition": "NOT NULL",
+        "description": "Hash de senha; Argon2id é requisito, não garantia do VARCHAR. Nunca expor em consultas comuns.",
+        "privacy": "DP",
+        "privacyNote": "Classificação conservadora por vínculo direto ou indireto com pessoa natural; confirmar contexto B2B.",
+        "lineage": "Origem proposta: Administração de identidades. Destino estrutural: usuario (persistência; consumo não documentado).",
+        "rbac": "Serviço de autenticação: verificação; Admin: redefinição; leitura humana: negada"
+      },
+      {
+        "name": "perfil",
+        "type": "ENUM('Admin', 'Gerente', 'Operador')",
+        "definition": "NOT NULL",
+        "description": "Perfil da aplicação, conforme domínio ENUM exato; não cria permissões no MySQL.",
+        "privacy": "DP",
+        "privacyNote": "Classificação conservadora por vínculo direto ou indireto com pessoa natural; confirmar contexto B2B.",
+        "lineage": "Origem proposta: Administração de identidades. Destino estrutural: usuario (persistência; consumo não documentado).",
+        "rbac": "Admin: gestão; Gerente: identificação; Operador: próprio cadastro"
+      },
+      {
+        "name": "ativo",
+        "type": "TINYINT",
+        "definition": "NOT NULL DEFAULT 1",
+        "description": "Indicador de atividade; 0 inativo, 1 ativo.",
+        "privacy": "DP",
+        "privacyNote": "Classificação conservadora por vínculo direto ou indireto com pessoa natural; confirmar contexto B2B.",
+        "lineage": "Origem proposta: Administração de identidades. Destino estrutural: usuario (persistência; consumo não documentado).",
+        "rbac": "Admin: gestão; Gerente: identificação; Operador: próprio cadastro"
+      }
+    ],
+    "pk": [
+      "id_usuario"
+    ],
+    "uniques": [
+      {
+        "name": "uk_usuario_login",
+        "columns": [
+          "login"
+        ]
+      }
+    ],
+    "fks": [],
+    "checks": [
+      {
+        "name": "ck_usuario_ativo",
+        "expression": "ativo IN (0,1)"
+      }
+    ],
+    "ddl": "\n  `id_usuario` INT NOT NULL AUTO_INCREMENT,\n  `nome` VARCHAR(100) NOT NULL,\n  `login` VARCHAR(100) NOT NULL,\n  `senha_hash` VARCHAR(255) NOT NULL,\n  `perfil` ENUM('Admin', 'Gerente', 'Operador') NOT NULL,\n  `ativo` TINYINT NOT NULL DEFAULT 1,\n  PRIMARY KEY (`id_usuario`),\n  UNIQUE INDEX `uk_usuario_login` (`login` ASC) VISIBLE",
+    "purpose": "Identidades, credenciais e perfis dos operadores."
+  },
+  {
+    "name": "cliente",
+    "columns": [
+      {
+        "name": "id_cliente",
+        "type": "INT",
+        "definition": "NOT NULL AUTO_INCREMENT",
+        "description": "Identificador técnico do registro.",
+        "privacy": "DP",
+        "privacyNote": "Classificação conservadora por vínculo direto ou indireto com pessoa natural; confirmar contexto B2B.",
+        "lineage": "Origem proposta: geração MySQL (AUTO_INCREMENT). Destino estrutural: endereco.id_cliente, pedido.id_cliente.",
+        "rbac": "Admin/Gerente: gestão; Operador: cadastro autorizado"
+      },
+      {
+        "name": "nome",
+        "type": "VARCHAR(150)",
+        "definition": "NOT NULL",
+        "description": "Nome cadastral.",
+        "privacy": "DP",
+        "privacyNote": "Classificação conservadora por vínculo direto ou indireto com pessoa natural; confirmar contexto B2B.",
+        "lineage": "Origem proposta: Cadastro comercial. Destino estrutural: cliente (persistência; consumo não documentado).",
+        "rbac": "Admin/Gerente: gestão; Operador: cadastro autorizado"
+      },
+      {
+        "name": "email",
+        "type": "VARCHAR(150)",
+        "definition": "NULL DEFAULT NULL",
+        "description": "Endereço eletrônico opcional; formato não validado pelo DDL.",
+        "privacy": "DP",
+        "privacyNote": "Classificação conservadora por vínculo direto ou indireto com pessoa natural; confirmar contexto B2B.",
+        "lineage": "Origem proposta: Cadastro comercial. Destino estrutural: cliente (persistência; consumo não documentado).",
+        "rbac": "Admin/Gerente: gestão; Operador: cadastro autorizado"
+      },
+      {
+        "name": "cpf_cnpj",
+        "type": "VARCHAR(14)",
+        "definition": "NOT NULL",
+        "description": "CPF ou CNPJ; unicidade textual; dígitos verificadores não validados pelo DDL.",
+        "privacy": "DP",
+        "privacyNote": "Classificação conservadora por vínculo direto ou indireto com pessoa natural; confirmar contexto B2B.",
+        "lineage": "Origem proposta: Cadastro comercial. Destino estrutural: cliente (persistência; consumo não documentado).",
+        "rbac": "Admin/Gerente: gestão; Operador: cadastro autorizado"
+      },
+      {
+        "name": "telefone",
+        "type": "VARCHAR(20)",
+        "definition": "NULL DEFAULT NULL",
+        "description": "Contato telefônico opcional.",
+        "privacy": "DP",
+        "privacyNote": "Classificação conservadora por vínculo direto ou indireto com pessoa natural; confirmar contexto B2B.",
+        "lineage": "Origem proposta: Cadastro comercial. Destino estrutural: cliente (persistência; consumo não documentado).",
+        "rbac": "Admin/Gerente: gestão; Operador: cadastro autorizado"
+      },
+      {
+        "name": "consent_lgpd",
+        "type": "TINYINT",
+        "definition": "NOT NULL DEFAULT 0",
+        "description": "Indicador de consentimento; não substitui definição de base legal.",
+        "privacy": "DP",
+        "privacyNote": "Classificação conservadora por vínculo direto ou indireto com pessoa natural; confirmar contexto B2B.",
+        "lineage": "Origem proposta: Cadastro comercial. Destino estrutural: cliente (persistência; consumo não documentado).",
+        "rbac": "Admin/Gerente: gestão; Operador: cadastro autorizado"
+      },
+      {
+        "name": "data_consentimento",
+        "type": "DATETIME",
+        "definition": "NULL DEFAULT NULL",
+        "description": "Data do consentimento; obrigatória quando consent_lgpd = 1.",
+        "privacy": "DP",
+        "privacyNote": "Classificação conservadora por vínculo direto ou indireto com pessoa natural; confirmar contexto B2B.",
+        "lineage": "Origem proposta: Cadastro comercial. Destino estrutural: cliente (persistência; consumo não documentado).",
+        "rbac": "Admin/Gerente: gestão; Operador: cadastro autorizado"
+      },
+      {
+        "name": "ativo",
+        "type": "TINYINT",
+        "definition": "NOT NULL DEFAULT 1",
+        "description": "Indicador de atividade; 0 inativo, 1 ativo.",
+        "privacy": "DP",
+        "privacyNote": "Classificação conservadora por vínculo direto ou indireto com pessoa natural; confirmar contexto B2B.",
+        "lineage": "Origem proposta: Cadastro comercial. Destino estrutural: cliente (persistência; consumo não documentado).",
+        "rbac": "Admin/Gerente: gestão; Operador: cadastro autorizado"
+      }
+    ],
+    "pk": [
+      "id_cliente"
+    ],
+    "uniques": [
+      {
+        "name": "uk_cliente_cpf_cnpj",
+        "columns": [
+          "cpf_cnpj"
+        ]
+      }
+    ],
+    "fks": [],
+    "checks": [
+      {
+        "name": "ck_cliente_ativo",
+        "expression": "ativo IN (0,1)"
+      },
+      {
+        "name": "ck_cliente_consentimento",
+        "expression": "consent_lgpd IN (0,1)"
+      },
+      {
+        "name": "ck_cliente_data_consentimento",
+        "expression": "consent_lgpd = 0 OR data_consentimento IS NOT NULL"
+      }
+    ],
+    "ddl": "\n  `id_cliente` INT NOT NULL AUTO_INCREMENT,\n  `nome` VARCHAR(150) NOT NULL,\n  `email` VARCHAR(150) NULL DEFAULT NULL,\n  `cpf_cnpj` VARCHAR(14) NOT NULL,\n  `telefone` VARCHAR(20) NULL DEFAULT NULL,\n  `consent_lgpd` TINYINT NOT NULL DEFAULT 0,\n  `data_consentimento` DATETIME NULL DEFAULT NULL,\n  `ativo` TINYINT NOT NULL DEFAULT 1,\n  PRIMARY KEY (`id_cliente`),\n  UNIQUE INDEX `uk_cliente_cpf_cnpj` (`cpf_cnpj` ASC) VISIBLE",
+    "purpose": "Cadastro de clientes e registro de consentimento."
+  },
+  {
+    "name": "endereco",
+    "columns": [
+      {
+        "name": "id_endereco",
+        "type": "INT",
+        "definition": "NOT NULL AUTO_INCREMENT",
+        "description": "Identificador técnico do registro.",
+        "privacy": "DP",
+        "privacyNote": "Classificação conservadora por vínculo direto ou indireto com pessoa natural; confirmar contexto B2B.",
+        "lineage": "Origem proposta: geração MySQL (AUTO_INCREMENT). Destino estrutural: pedido.id_endereco.",
+        "rbac": "Admin/Gerente: gestão; Operador: entrega autorizada"
+      },
+      {
+        "name": "id_cliente",
+        "type": "INT",
+        "definition": "NOT NULL",
+        "description": "Referência ao registro relacionado.",
+        "privacy": "DP",
+        "privacyNote": "Classificação conservadora por vínculo direto ou indireto com pessoa natural; confirmar contexto B2B.",
+        "lineage": "Origem proposta: referência cliente.id_cliente. Destino estrutural: pedido.id_cliente.",
+        "rbac": "Admin/Gerente: gestão; Operador: entrega autorizada"
+      },
+      {
+        "name": "logradouro",
+        "type": "VARCHAR(200)",
+        "definition": "NOT NULL",
+        "description": "Logradouro do endereço de entrega.",
+        "privacy": "DP",
+        "privacyNote": "Classificação conservadora por vínculo direto ou indireto com pessoa natural; confirmar contexto B2B.",
+        "lineage": "Origem proposta: Cadastro de endereços. Destino estrutural: endereco (persistência; consumo não documentado).",
+        "rbac": "Admin/Gerente: gestão; Operador: entrega autorizada"
+      },
+      {
+        "name": "numero",
+        "type": "VARCHAR(20)",
+        "definition": "NOT NULL",
+        "description": "Número do endereço, admite texto.",
+        "privacy": "DP",
+        "privacyNote": "Classificação conservadora por vínculo direto ou indireto com pessoa natural; confirmar contexto B2B.",
+        "lineage": "Origem proposta: Cadastro de endereços. Destino estrutural: endereco (persistência; consumo não documentado).",
+        "rbac": "Admin/Gerente: gestão; Operador: entrega autorizada"
+      },
+      {
+        "name": "complemento",
+        "type": "VARCHAR(100)",
+        "definition": "NULL DEFAULT NULL",
+        "description": "Complemento opcional do endereço.",
+        "privacy": "DP",
+        "privacyNote": "Classificação conservadora por vínculo direto ou indireto com pessoa natural; confirmar contexto B2B.",
+        "lineage": "Origem proposta: Cadastro de endereços. Destino estrutural: endereco (persistência; consumo não documentado).",
+        "rbac": "Admin/Gerente: gestão; Operador: entrega autorizada"
+      },
+      {
+        "name": "bairro",
+        "type": "VARCHAR(100)",
+        "definition": "NOT NULL",
+        "description": "Bairro de entrega.",
+        "privacy": "DP",
+        "privacyNote": "Classificação conservadora por vínculo direto ou indireto com pessoa natural; confirmar contexto B2B.",
+        "lineage": "Origem proposta: Cadastro de endereços. Destino estrutural: endereco (persistência; consumo não documentado).",
+        "rbac": "Admin/Gerente: gestão; Operador: entrega autorizada"
+      },
+      {
+        "name": "cidade",
+        "type": "VARCHAR(100)",
+        "definition": "NOT NULL",
+        "description": "Município de entrega.",
+        "privacy": "DP",
+        "privacyNote": "Classificação conservadora por vínculo direto ou indireto com pessoa natural; confirmar contexto B2B.",
+        "lineage": "Origem proposta: Cadastro de endereços. Destino estrutural: endereco (persistência; consumo não documentado).",
+        "rbac": "Admin/Gerente: gestão; Operador: entrega autorizada"
+      },
+      {
+        "name": "uf",
+        "type": "CHAR(2)",
+        "definition": "NOT NULL",
+        "description": "Sigla de unidade federativa; domínio de siglas não validado no DDL.",
+        "privacy": "DP",
+        "privacyNote": "Classificação conservadora por vínculo direto ou indireto com pessoa natural; confirmar contexto B2B.",
+        "lineage": "Origem proposta: Cadastro de endereços. Destino estrutural: endereco (persistência; consumo não documentado).",
+        "rbac": "Admin/Gerente: gestão; Operador: entrega autorizada"
+      },
+      {
+        "name": "cep",
+        "type": "CHAR(8)",
+        "definition": "NOT NULL",
+        "description": "CEP com oito caracteres; somente dígitos não imposto pelo DDL.",
+        "privacy": "DP",
+        "privacyNote": "Classificação conservadora por vínculo direto ou indireto com pessoa natural; confirmar contexto B2B.",
+        "lineage": "Origem proposta: Cadastro de endereços. Destino estrutural: endereco (persistência; consumo não documentado).",
+        "rbac": "Admin/Gerente: gestão; Operador: entrega autorizada"
+      }
+    ],
+    "pk": [
+      "id_endereco"
+    ],
+    "uniques": [
+      {
+        "name": "uk_endereco_cliente",
+        "columns": [
+          "id_endereco",
+          "id_cliente"
+        ]
+      }
+    ],
+    "fks": [
+      {
+        "name": "fk_endereco_cliente",
+        "columns": [
+          "id_cliente"
+        ],
+        "table": "cliente",
+        "refs": [
+          "id_cliente"
+        ],
+        "delete": "RESTRICT",
+        "update": "RESTRICT"
+      }
+    ],
+    "checks": [],
+    "ddl": "\n  `id_endereco` INT NOT NULL AUTO_INCREMENT,\n  `id_cliente` INT NOT NULL,\n  `logradouro` VARCHAR(200) NOT NULL,\n  `numero` VARCHAR(20) NOT NULL,\n  `complemento` VARCHAR(100) NULL DEFAULT NULL,\n  `bairro` VARCHAR(100) NOT NULL,\n  `cidade` VARCHAR(100) NOT NULL,\n  `uf` CHAR(2) NOT NULL,\n  `cep` CHAR(8) NOT NULL,\n  PRIMARY KEY (`id_endereco`),\n  UNIQUE INDEX `uk_endereco_cliente` (`id_endereco` ASC, `id_cliente` ASC) VISIBLE,\n  INDEX `idx_endereco_cliente` (`id_cliente` ASC) VISIBLE,\n  INDEX `idx_endereco_regiao` (`uf` ASC, `cidade` ASC, `cep` ASC) VISIBLE,\n  CONSTRAINT `fk_endereco_cliente`\n    FOREIGN KEY (`id_cliente`)\n    REFERENCES `dolly_vendas`.`cliente` (`id_cliente`)\n    ON DELETE RESTRICT\n    ON UPDATE RESTRICT",
+    "purpose": "Endereços atômicos vinculados aos clientes."
+  },
+  {
+    "name": "fornecedor",
+    "columns": [
+      {
+        "name": "id_fornecedor",
+        "type": "INT",
+        "definition": "NOT NULL AUTO_INCREMENT",
+        "description": "Identificador técnico do registro.",
+        "privacy": "N/A",
+        "privacyNote": "Não pessoal no contexto cadastral; confirmar conteúdo.",
+        "lineage": "Origem proposta: geração MySQL (AUTO_INCREMENT). Destino estrutural: produto.id_fornecedor.",
+        "rbac": "Admin/Gerente: gestão; Operador: operação autorizada por escopo"
+      },
+      {
+        "name": "razao_social",
+        "type": "VARCHAR(150)",
+        "definition": "NOT NULL",
+        "description": "Nome empresarial do fornecedor.",
+        "privacy": "N/A",
+        "privacyNote": "Não pessoal no contexto cadastral; confirmar conteúdo.",
+        "lineage": "Origem proposta: Cadastro de suprimentos. Destino estrutural: fornecedor (persistência; consumo não documentado).",
+        "rbac": "Admin/Gerente: gestão; Operador: operação autorizada por escopo"
+      },
+      {
+        "name": "cnpj",
+        "type": "VARCHAR(14)",
+        "definition": "NOT NULL",
+        "description": "CNPJ único do fornecedor; validação de dígitos não incluída.",
+        "privacy": "N/A",
+        "privacyNote": "Não pessoal no contexto cadastral; confirmar conteúdo.",
+        "lineage": "Origem proposta: Cadastro de suprimentos. Destino estrutural: fornecedor (persistência; consumo não documentado).",
+        "rbac": "Admin/Gerente: gestão; Operador: operação autorizada por escopo"
+      },
+      {
+        "name": "contato",
+        "type": "VARCHAR(100)",
+        "definition": "NULL DEFAULT NULL",
+        "description": "Contato do fornecedor; pode identificar pessoa natural.",
+        "privacy": "DP",
+        "privacyNote": "Pode identificar pessoa natural.",
+        "lineage": "Origem proposta: Cadastro de suprimentos. Destino estrutural: fornecedor (persistência; consumo não documentado).",
+        "rbac": "Admin/Gerente: gestão; Operador: operação autorizada por escopo"
+      },
+      {
+        "name": "ativo",
+        "type": "TINYINT",
+        "definition": "NOT NULL DEFAULT 1",
+        "description": "Indicador de atividade; 0 inativo, 1 ativo.",
+        "privacy": "N/A",
+        "privacyNote": "Não pessoal no contexto cadastral; confirmar conteúdo.",
+        "lineage": "Origem proposta: Cadastro de suprimentos. Destino estrutural: fornecedor (persistência; consumo não documentado).",
+        "rbac": "Admin/Gerente: gestão; Operador: operação autorizada por escopo"
+      }
+    ],
+    "pk": [
+      "id_fornecedor"
+    ],
+    "uniques": [
+      {
+        "name": "uk_fornecedor_cnpj",
+        "columns": [
+          "cnpj"
+        ]
+      }
+    ],
+    "fks": [],
+    "checks": [
+      {
+        "name": "ck_fornecedor_ativo",
+        "expression": "ativo IN (0,1)"
+      }
+    ],
+    "ddl": "\n  `id_fornecedor` INT NOT NULL AUTO_INCREMENT,\n  `razao_social` VARCHAR(150) NOT NULL,\n  `cnpj` VARCHAR(14) NOT NULL,\n  `contato` VARCHAR(100) NULL DEFAULT NULL,\n  `ativo` TINYINT NOT NULL DEFAULT 1,\n  PRIMARY KEY (`id_fornecedor`),\n  UNIQUE INDEX `uk_fornecedor_cnpj` (`cnpj` ASC) VISIBLE",
+    "purpose": "Cadastro de fornecedores do catálogo."
+  },
+  {
+    "name": "categoria",
+    "columns": [
+      {
+        "name": "id_categoria",
+        "type": "INT",
+        "definition": "NOT NULL AUTO_INCREMENT",
+        "description": "Identificador técnico do registro.",
+        "privacy": "N/A",
+        "privacyNote": "Não pessoal no contexto cadastral; confirmar conteúdo.",
+        "lineage": "Origem proposta: geração MySQL (AUTO_INCREMENT). Destino estrutural: produto.id_categoria.",
+        "rbac": "Admin/Gerente: gestão; Operador: operação autorizada por escopo"
+      },
+      {
+        "name": "nome",
+        "type": "VARCHAR(100)",
+        "definition": "NOT NULL",
+        "description": "Nome cadastral.",
+        "privacy": "N/A",
+        "privacyNote": "Não pessoal no contexto cadastral; confirmar conteúdo.",
+        "lineage": "Origem proposta: Gestão do catálogo. Destino estrutural: categoria (persistência; consumo não documentado).",
+        "rbac": "Admin/Gerente: gestão; Operador: operação autorizada por escopo"
+      },
+      {
+        "name": "ativo",
+        "type": "TINYINT",
+        "definition": "NOT NULL DEFAULT 1",
+        "description": "Indicador de atividade; 0 inativo, 1 ativo.",
+        "privacy": "N/A",
+        "privacyNote": "Não pessoal no contexto cadastral; confirmar conteúdo.",
+        "lineage": "Origem proposta: Gestão do catálogo. Destino estrutural: categoria (persistência; consumo não documentado).",
+        "rbac": "Admin/Gerente: gestão; Operador: operação autorizada por escopo"
+      }
+    ],
+    "pk": [
+      "id_categoria"
+    ],
+    "uniques": [
+      {
+        "name": "uk_categoria_nome",
+        "columns": [
+          "nome"
+        ]
+      }
+    ],
+    "fks": [],
+    "checks": [
+      {
+        "name": "ck_categoria_ativo",
+        "expression": "ativo IN (0,1)"
+      }
+    ],
+    "ddl": "\n  `id_categoria` INT NOT NULL AUTO_INCREMENT,\n  `nome` VARCHAR(100) NOT NULL,\n  `ativo` TINYINT NOT NULL DEFAULT 1,\n  PRIMARY KEY (`id_categoria`),\n  UNIQUE INDEX `uk_categoria_nome` (`nome` ASC) VISIBLE",
+    "purpose": "Classificação dos produtos."
+  },
+  {
+    "name": "produto",
+    "columns": [
+      {
+        "name": "id_produto",
+        "type": "INT",
+        "definition": "NOT NULL AUTO_INCREMENT",
+        "description": "Identificador técnico do registro.",
+        "privacy": "N/A",
+        "privacyNote": "Não pessoal no contexto cadastral; confirmar conteúdo.",
+        "lineage": "Origem proposta: geração MySQL (AUTO_INCREMENT). Destino estrutural: lote.id_produto, preco_regiao.id_produto, item_pedido.id_produto.",
+        "rbac": "Admin/Gerente: gestão; Operador: operação autorizada por escopo"
+      },
+      {
+        "name": "id_categoria",
+        "type": "INT",
+        "definition": "NOT NULL",
+        "description": "Referência ao registro relacionado.",
+        "privacy": "N/A",
+        "privacyNote": "Não pessoal no contexto cadastral; confirmar conteúdo.",
+        "lineage": "Origem proposta: referência categoria.id_categoria. Destino estrutural: produto (persistência; consumo não documentado).",
+        "rbac": "Admin/Gerente: gestão; Operador: operação autorizada por escopo"
+      },
+      {
+        "name": "id_fornecedor",
+        "type": "INT",
+        "definition": "NOT NULL",
+        "description": "Referência ao registro relacionado.",
+        "privacy": "N/A",
+        "privacyNote": "Não pessoal no contexto cadastral; confirmar conteúdo.",
+        "lineage": "Origem proposta: referência fornecedor.id_fornecedor. Destino estrutural: produto (persistência; consumo não documentado).",
+        "rbac": "Admin/Gerente: gestão; Operador: operação autorizada por escopo"
+      },
+      {
+        "name": "descricao",
+        "type": "VARCHAR(200)",
+        "definition": "NOT NULL",
+        "description": "Descrição cadastral ou comercial.",
+        "privacy": "N/A",
+        "privacyNote": "Não pessoal no contexto cadastral; confirmar conteúdo.",
+        "lineage": "Origem proposta: Gestão de catálogo e estoque. Destino estrutural: produto (persistência; consumo não documentado).",
+        "rbac": "Admin/Gerente: gestão; Operador: operação autorizada por escopo"
+      },
+      {
+        "name": "preco_tabela",
+        "type": "DECIMAL(10,2)",
+        "definition": "NOT NULL",
+        "description": "Preço base; precedência com preço regional precisa ser definida.",
+        "privacy": "N/A",
+        "privacyNote": "Não pessoal no contexto cadastral; confirmar conteúdo.",
+        "lineage": "Origem proposta: Gestão de catálogo e estoque. Destino estrutural: produto (persistência; consumo não documentado).",
+        "rbac": "Admin/Gerente: gestão; Operador: operação autorizada por escopo"
+      },
+      {
+        "name": "saldo_estoque",
+        "type": "INT",
+        "definition": "NOT NULL DEFAULT 0",
+        "description": "Saldo agregado persistido; igualdade com soma dos lotes não garantida.",
+        "privacy": "N/A",
+        "privacyNote": "Não pessoal no contexto cadastral; confirmar conteúdo.",
+        "lineage": "Origem proposta: Gestão de catálogo e estoque. Destino estrutural: produto (persistência; consumo não documentado).",
+        "rbac": "Admin/Gerente: gestão; Operador: operação autorizada por escopo"
+      },
+      {
+        "name": "ativo",
+        "type": "TINYINT",
+        "definition": "NOT NULL DEFAULT 1",
+        "description": "Indicador de atividade; 0 inativo, 1 ativo.",
+        "privacy": "N/A",
+        "privacyNote": "Não pessoal no contexto cadastral; confirmar conteúdo.",
+        "lineage": "Origem proposta: Gestão de catálogo e estoque. Destino estrutural: produto (persistência; consumo não documentado).",
+        "rbac": "Admin/Gerente: gestão; Operador: operação autorizada por escopo"
+      }
+    ],
+    "pk": [
+      "id_produto"
+    ],
+    "uniques": [],
+    "fks": [
+      {
+        "name": "fk_produto_categoria",
+        "columns": [
+          "id_categoria"
+        ],
+        "table": "categoria",
+        "refs": [
+          "id_categoria"
+        ],
+        "delete": "RESTRICT",
+        "update": "RESTRICT"
+      },
+      {
+        "name": "fk_produto_fornecedor",
+        "columns": [
+          "id_fornecedor"
+        ],
+        "table": "fornecedor",
+        "refs": [
+          "id_fornecedor"
+        ],
+        "delete": "RESTRICT",
+        "update": "RESTRICT"
+      }
+    ],
+    "checks": [
+      {
+        "name": "ck_produto_preco",
+        "expression": "preco_tabela > 0"
+      },
+      {
+        "name": "ck_produto_saldo",
+        "expression": "saldo_estoque >= 0"
+      },
+      {
+        "name": "ck_produto_ativo",
+        "expression": "ativo IN (0,1)"
+      }
+    ],
+    "ddl": "\n  `id_produto` INT NOT NULL AUTO_INCREMENT,\n  `id_categoria` INT NOT NULL,\n  `id_fornecedor` INT NOT NULL,\n  `descricao` VARCHAR(200) NOT NULL,\n  `preco_tabela` DECIMAL(10,2) NOT NULL,\n  `saldo_estoque` INT NOT NULL DEFAULT 0,\n  `ativo` TINYINT NOT NULL DEFAULT 1,\n  PRIMARY KEY (`id_produto`),\n  INDEX `idx_produto_categoria` (`id_categoria` ASC) VISIBLE,\n  INDEX `idx_produto_fornecedor` (`id_fornecedor` ASC) VISIBLE,\n  CONSTRAINT `fk_produto_categoria`\n    FOREIGN KEY (`id_categoria`)\n    REFERENCES `dolly_vendas`.`categoria` (`id_categoria`)\n    ON DELETE RESTRICT\n    ON UPDATE RESTRICT,\n\n  CONSTRAINT `fk_produto_fornecedor`\n    FOREIGN KEY (`id_fornecedor`)\n    REFERENCES `dolly_vendas`.`fornecedor` (`id_fornecedor`)\n    ON DELETE RESTRICT\n    ON UPDATE RESTRICT",
+    "purpose": "Catálogo, preço base e saldo agregado de estoque."
+  },
+  {
+    "name": "lote",
+    "columns": [
+      {
+        "name": "id_lote",
+        "type": "INT",
+        "definition": "NOT NULL AUTO_INCREMENT",
+        "description": "Identificador técnico do registro.",
+        "privacy": "N/A",
+        "privacyNote": "Não pessoal no contexto cadastral; confirmar conteúdo.",
+        "lineage": "Origem proposta: geração MySQL (AUTO_INCREMENT). Destino estrutural: item_pedido_lote.id_lote.",
+        "rbac": "Admin/Gerente: gestão; Operador: operação autorizada por escopo"
+      },
+      {
+        "name": "id_produto",
+        "type": "INT",
+        "definition": "NOT NULL",
+        "description": "Referência ao registro relacionado.",
+        "privacy": "N/A",
+        "privacyNote": "Não pessoal no contexto cadastral; confirmar conteúdo.",
+        "lineage": "Origem proposta: referência produto.id_produto. Destino estrutural: item_pedido_lote.id_produto.",
+        "rbac": "Admin/Gerente: gestão; Operador: operação autorizada por escopo"
+      },
+      {
+        "name": "numero_lote",
+        "type": "VARCHAR(50)",
+        "definition": "NOT NULL",
+        "description": "Código de lote, único em conjunto com o produto.",
+        "privacy": "N/A",
+        "privacyNote": "Não pessoal no contexto cadastral; confirmar conteúdo.",
+        "lineage": "Origem proposta: Recebimento e movimentação de estoque. Destino estrutural: lote (persistência; consumo não documentado).",
+        "rbac": "Admin/Gerente: gestão; Operador: operação autorizada por escopo"
+      },
+      {
+        "name": "quantidade_inicial",
+        "type": "INT",
+        "definition": "NOT NULL",
+        "description": "Quantidade original do lote.",
+        "privacy": "N/A",
+        "privacyNote": "Não pessoal no contexto cadastral; confirmar conteúdo.",
+        "lineage": "Origem proposta: Recebimento e movimentação de estoque. Destino estrutural: lote (persistência; consumo não documentado).",
+        "rbac": "Admin/Gerente: gestão; Operador: operação autorizada por escopo"
+      },
+      {
+        "name": "quantidade_atual",
+        "type": "INT",
+        "definition": "NOT NULL",
+        "description": "Saldo disponível do lote; FEFO não é executado pelo índice.",
+        "privacy": "N/A",
+        "privacyNote": "Não pessoal no contexto cadastral; confirmar conteúdo.",
+        "lineage": "Origem proposta: Recebimento e movimentação de estoque. Destino estrutural: lote (persistência; consumo não documentado).",
+        "rbac": "Admin/Gerente: gestão; Operador: operação autorizada por escopo"
+      },
+      {
+        "name": "data_fabricacao",
+        "type": "DATE",
+        "definition": "NOT NULL",
+        "description": "Data de fabricação do lote.",
+        "privacy": "N/A",
+        "privacyNote": "Não pessoal no contexto cadastral; confirmar conteúdo.",
+        "lineage": "Origem proposta: Recebimento e movimentação de estoque. Destino estrutural: lote (persistência; consumo não documentado).",
+        "rbac": "Admin/Gerente: gestão; Operador: operação autorizada por escopo"
+      },
+      {
+        "name": "data_validade",
+        "type": "DATE",
+        "definition": "NOT NULL",
+        "description": "Data de vencimento; índice apoia ordenação FEFO, sem impor algoritmo.",
+        "privacy": "N/A",
+        "privacyNote": "Não pessoal no contexto cadastral; confirmar conteúdo.",
+        "lineage": "Origem proposta: Recebimento e movimentação de estoque. Destino estrutural: lote (persistência; consumo não documentado).",
+        "rbac": "Admin/Gerente: gestão; Operador: operação autorizada por escopo"
+      }
+    ],
+    "pk": [
+      "id_lote"
+    ],
+    "uniques": [
+      {
+        "name": "uk_lote_numero_produto",
+        "columns": [
+          "id_produto",
+          "numero_lote"
+        ]
+      },
+      {
+        "name": "uk_lote_produto",
+        "columns": [
+          "id_lote",
+          "id_produto"
+        ]
+      }
+    ],
+    "fks": [
+      {
+        "name": "fk_lote_produto",
+        "columns": [
+          "id_produto"
+        ],
+        "table": "produto",
+        "refs": [
+          "id_produto"
+        ],
+        "delete": "RESTRICT",
+        "update": "RESTRICT"
+      }
+    ],
+    "checks": [
+      {
+        "name": "ck_lote_quantidades",
+        "expression": "quantidade_inicial > 0 AND quantidade_atual >= 0 AND quantidade_atual <= quantidade_inicial"
+      },
+      {
+        "name": "ck_lote_datas",
+        "expression": "data_validade >= data_fabricacao"
+      }
+    ],
+    "ddl": "\n  `id_lote` INT NOT NULL AUTO_INCREMENT,\n  `id_produto` INT NOT NULL,\n  `numero_lote` VARCHAR(50) NOT NULL,\n  `quantidade_inicial` INT NOT NULL,\n  `quantidade_atual` INT NOT NULL,\n  `data_fabricacao` DATE NOT NULL,\n  `data_validade` DATE NOT NULL,\n  PRIMARY KEY (`id_lote`),\n  UNIQUE INDEX `uk_lote_numero_produto` (`id_produto` ASC, `numero_lote` ASC) VISIBLE,\n  UNIQUE INDEX `uk_lote_produto` (`id_lote` ASC, `id_produto` ASC) VISIBLE,\n  INDEX `idx_lote_fefo` (`id_produto` ASC, `data_validade` ASC, `id_lote` ASC) VISIBLE,\n  CONSTRAINT `fk_lote_produto`\n    FOREIGN KEY (`id_produto`)\n    REFERENCES `dolly_vendas`.`produto` (`id_produto`)\n    ON DELETE RESTRICT\n    ON UPDATE RESTRICT",
+    "purpose": "Quantidades e datas de fabricação e validade por lote."
+  },
+  {
+    "name": "preco_regiao",
+    "columns": [
+      {
+        "name": "id_preco_regiao",
+        "type": "INT",
+        "definition": "NOT NULL AUTO_INCREMENT",
+        "description": "Identificador técnico do registro.",
+        "privacy": "N/A",
+        "privacyNote": "Não pessoal no contexto cadastral; confirmar conteúdo.",
+        "lineage": "Origem proposta: geração MySQL (AUTO_INCREMENT). Destino estrutural: preco_regiao (persistência; consumo não documentado).",
+        "rbac": "Admin/Gerente: gestão; Operador: operação autorizada por escopo"
+      },
+      {
+        "name": "id_produto",
+        "type": "INT",
+        "definition": "NOT NULL",
+        "description": "Referência ao registro relacionado.",
+        "privacy": "N/A",
+        "privacyNote": "Não pessoal no contexto cadastral; confirmar conteúdo.",
+        "lineage": "Origem proposta: referência produto.id_produto. Destino estrutural: preco_regiao (persistência; consumo não documentado).",
+        "rbac": "Admin/Gerente: gestão; Operador: operação autorizada por escopo"
+      },
+      {
+        "name": "uf",
+        "type": "CHAR(2)",
+        "definition": "NOT NULL",
+        "description": "Sigla de unidade federativa; domínio de siglas não validado no DDL.",
+        "privacy": "N/A",
+        "privacyNote": "Não pessoal no contexto cadastral; confirmar conteúdo.",
+        "lineage": "Origem proposta: Gestão comercial regional. Destino estrutural: preco_regiao (persistência; consumo não documentado).",
+        "rbac": "Admin/Gerente: gestão; Operador: operação autorizada por escopo"
+      },
+      {
+        "name": "preco_vigente",
+        "type": "DECIMAL(10,2)",
+        "definition": "NOT NULL",
+        "description": "Preço regional persistido; sem histórico temporal de vigência.",
+        "privacy": "N/A",
+        "privacyNote": "Não pessoal no contexto cadastral; confirmar conteúdo.",
+        "lineage": "Origem proposta: Gestão comercial regional. Destino estrutural: preco_regiao (persistência; consumo não documentado).",
+        "rbac": "Admin/Gerente: gestão; Operador: operação autorizada por escopo"
+      }
+    ],
+    "pk": [
+      "id_preco_regiao"
+    ],
+    "uniques": [
+      {
+        "name": "uk_preco_regiao_produto_uf",
+        "columns": [
+          "id_produto",
+          "uf"
+        ]
+      }
+    ],
+    "fks": [
+      {
+        "name": "fk_preco_regiao_produto",
+        "columns": [
+          "id_produto"
+        ],
+        "table": "produto",
+        "refs": [
+          "id_produto"
+        ],
+        "delete": "RESTRICT",
+        "update": "RESTRICT"
+      }
+    ],
+    "checks": [
+      {
+        "name": "ck_preco_regiao_valor",
+        "expression": "preco_vigente > 0"
+      }
+    ],
+    "ddl": "\n  `id_preco_regiao` INT NOT NULL AUTO_INCREMENT,\n  `id_produto` INT NOT NULL,\n  `uf` CHAR(2) NOT NULL,\n  `preco_vigente` DECIMAL(10,2) NOT NULL,\n  PRIMARY KEY (`id_preco_regiao`),\n  UNIQUE INDEX `uk_preco_regiao_produto_uf` (`id_produto` ASC, `uf` ASC) VISIBLE,\n  CONSTRAINT `fk_preco_regiao_produto`\n    FOREIGN KEY (`id_produto`)\n    REFERENCES `dolly_vendas`.`produto` (`id_produto`)\n    ON DELETE RESTRICT\n    ON UPDATE RESTRICT",
+    "purpose": "Preço de cada produto por unidade federativa."
+  },
+  {
+    "name": "promocao",
+    "columns": [
+      {
+        "name": "id_promocao",
+        "type": "INT",
+        "definition": "NOT NULL AUTO_INCREMENT",
+        "description": "Identificador técnico do registro.",
+        "privacy": "N/A",
+        "privacyNote": "Não pessoal no contexto cadastral; confirmar conteúdo.",
+        "lineage": "Origem proposta: geração MySQL (AUTO_INCREMENT). Destino estrutural: item_pedido.id_promocao.",
+        "rbac": "Admin/Gerente: gestão; Operador: operação autorizada por escopo"
+      },
+      {
+        "name": "descricao",
+        "type": "VARCHAR(150)",
+        "definition": "NOT NULL",
+        "description": "Descrição cadastral ou comercial.",
+        "privacy": "N/A",
+        "privacyNote": "Não pessoal no contexto cadastral; confirmar conteúdo.",
+        "lineage": "Origem proposta: Gestão comercial. Destino estrutural: promocao (persistência; consumo não documentado).",
+        "rbac": "Admin/Gerente: gestão; Operador: operação autorizada por escopo"
+      },
+      {
+        "name": "percentual_desconto",
+        "type": "DECIMAL(5,2)",
+        "definition": "NOT NULL",
+        "description": "Percentual da campanha; aplicação ao item não automatizada no DDL.",
+        "privacy": "N/A",
+        "privacyNote": "Não pessoal no contexto cadastral; confirmar conteúdo.",
+        "lineage": "Origem proposta: Gestão comercial. Destino estrutural: promocao (persistência; consumo não documentado).",
+        "rbac": "Admin/Gerente: gestão; Operador: operação autorizada por escopo"
+      },
+      {
+        "name": "data_inicio",
+        "type": "DATE",
+        "definition": "NOT NULL",
+        "description": "Início da campanha.",
+        "privacy": "N/A",
+        "privacyNote": "Não pessoal no contexto cadastral; confirmar conteúdo.",
+        "lineage": "Origem proposta: Gestão comercial. Destino estrutural: promocao (persistência; consumo não documentado).",
+        "rbac": "Admin/Gerente: gestão; Operador: operação autorizada por escopo"
+      },
+      {
+        "name": "data_fim",
+        "type": "DATE",
+        "definition": "NOT NULL",
+        "description": "Fim da campanha.",
+        "privacy": "N/A",
+        "privacyNote": "Não pessoal no contexto cadastral; confirmar conteúdo.",
+        "lineage": "Origem proposta: Gestão comercial. Destino estrutural: promocao (persistência; consumo não documentado).",
+        "rbac": "Admin/Gerente: gestão; Operador: operação autorizada por escopo"
+      },
+      {
+        "name": "ativo",
+        "type": "TINYINT",
+        "definition": "NOT NULL DEFAULT 1",
+        "description": "Indicador de atividade; 0 inativo, 1 ativo.",
+        "privacy": "N/A",
+        "privacyNote": "Não pessoal no contexto cadastral; confirmar conteúdo.",
+        "lineage": "Origem proposta: Gestão comercial. Destino estrutural: promocao (persistência; consumo não documentado).",
+        "rbac": "Admin/Gerente: gestão; Operador: operação autorizada por escopo"
+      }
+    ],
+    "pk": [
+      "id_promocao"
+    ],
+    "uniques": [],
+    "fks": [],
+    "checks": [
+      {
+        "name": "ck_promocao_percentual",
+        "expression": "percentual_desconto > 0 AND percentual_desconto < 100"
+      },
+      {
+        "name": "ck_promocao_datas",
+        "expression": "data_fim >= data_inicio"
+      },
+      {
+        "name": "ck_promocao_ativo",
+        "expression": "ativo IN (0,1)"
+      }
+    ],
+    "ddl": "\n  `id_promocao` INT NOT NULL AUTO_INCREMENT,\n  `descricao` VARCHAR(150) NOT NULL,\n  `percentual_desconto` DECIMAL(5,2) NOT NULL,\n  `data_inicio` DATE NOT NULL,\n  `data_fim` DATE NOT NULL,\n  `ativo` TINYINT NOT NULL DEFAULT 1,\n  PRIMARY KEY (`id_promocao`)",
+    "purpose": "Campanhas e percentuais de desconto."
+  },
+  {
+    "name": "pedido",
+    "columns": [
+      {
+        "name": "id_pedido",
+        "type": "INT",
+        "definition": "NOT NULL AUTO_INCREMENT",
+        "description": "Identificador técnico do registro.",
+        "privacy": "DP",
+        "privacyNote": "Classificação conservadora por vínculo direto ou indireto com pessoa natural; confirmar contexto B2B.",
+        "lineage": "Origem proposta: geração MySQL (AUTO_INCREMENT). Destino estrutural: item_pedido.id_pedido, nota_fiscal.id_pedido, conta_receber.id_pedido, pagamento.id_pedido, entrega.id_pedido, estorno.id_pedido.",
+        "rbac": "Admin/Gerente: gestão; Operador: operação autorizada por escopo"
+      },
+      {
+        "name": "id_cliente",
+        "type": "INT",
+        "definition": "NOT NULL",
+        "description": "Referência ao registro relacionado.",
+        "privacy": "DP",
+        "privacyNote": "Classificação conservadora por vínculo direto ou indireto com pessoa natural; confirmar contexto B2B.",
+        "lineage": "Origem proposta: referência cliente.id_cliente, endereco.id_cliente. Destino estrutural: pedido (persistência; consumo não documentado).",
+        "rbac": "Admin/Gerente: gestão; Operador: operação autorizada por escopo"
+      },
+      {
+        "name": "id_usuario",
+        "type": "INT",
+        "definition": "NOT NULL",
+        "description": "Referência ao registro relacionado.",
+        "privacy": "DP",
+        "privacyNote": "Classificação conservadora por vínculo direto ou indireto com pessoa natural; confirmar contexto B2B.",
+        "lineage": "Origem proposta: referência usuario.id_usuario. Destino estrutural: pedido (persistência; consumo não documentado).",
+        "rbac": "Admin/Gerente: gestão; Operador: operação autorizada por escopo"
+      },
+      {
+        "name": "id_endereco",
+        "type": "INT",
+        "definition": "NOT NULL",
+        "description": "Referência ao registro relacionado.",
+        "privacy": "DP",
+        "privacyNote": "Classificação conservadora por vínculo direto ou indireto com pessoa natural; confirmar contexto B2B.",
+        "lineage": "Origem proposta: referência endereco.id_endereco. Destino estrutural: pedido (persistência; consumo não documentado).",
+        "rbac": "Admin/Gerente: gestão; Operador: operação autorizada por escopo"
+      },
+      {
+        "name": "data_hora",
+        "type": "TIMESTAMP",
+        "definition": "NOT NULL DEFAULT CURRENT_TIMESTAMP",
+        "description": "Instante do registro; DEFAULT não impede edição posterior.",
+        "privacy": "DP",
+        "privacyNote": "Classificação conservadora por vínculo direto ou indireto com pessoa natural; confirmar contexto B2B.",
+        "lineage": "Origem proposta: Operação comercial. Destino estrutural: pedido (persistência; consumo não documentado).",
+        "rbac": "Admin/Gerente: gestão; Operador: operação autorizada por escopo"
+      },
+      {
+        "name": "situacao",
+        "type": "ENUM('ABERTO', 'FINALIZADO', 'CANCELADO')",
+        "definition": "NOT NULL DEFAULT 'ABERTO'",
+        "description": "Estado do pedido; transições não controladas por gatilho no script.",
+        "privacy": "DP",
+        "privacyNote": "Classificação conservadora por vínculo direto ou indireto com pessoa natural; confirmar contexto B2B.",
+        "lineage": "Origem proposta: Operação comercial. Destino estrutural: pedido (persistência; consumo não documentado).",
+        "rbac": "Admin/Gerente: gestão; Operador: operação autorizada por escopo"
+      },
+      {
+        "name": "forma_pagamento",
+        "type": "VARCHAR(50)",
+        "definition": "NOT NULL",
+        "description": "Forma de pagamento; domínio de pedido é texto e difere do ENUM de pagamento.",
+        "privacy": "DP",
+        "privacyNote": "Classificação conservadora por vínculo direto ou indireto com pessoa natural; confirmar contexto B2B.",
+        "lineage": "Origem proposta: Operação comercial. Destino estrutural: pedido (persistência; consumo não documentado).",
+        "rbac": "Admin/Gerente: gestão; Operador: operação autorizada por escopo"
+      },
+      {
+        "name": "valor_total",
+        "type": "DECIMAL(10,2)",
+        "definition": "NOT NULL DEFAULT 0.00",
+        "description": "Total persistido; DDL não calcula a soma dos itens.",
+        "privacy": "DP",
+        "privacyNote": "Classificação conservadora por vínculo direto ou indireto com pessoa natural; confirmar contexto B2B.",
+        "lineage": "Origem proposta: Operação comercial. Destino estrutural: pedido (persistência; consumo não documentado).",
+        "rbac": "Admin/Gerente: gestão; Operador: operação autorizada por escopo"
+      },
+      {
+        "name": "valor_desconto",
+        "type": "DECIMAL(10,2)",
+        "definition": "NOT NULL DEFAULT 0.00",
+        "description": "Desconto persistido; aplicação e limite frente ao total não automatizados.",
+        "privacy": "DP",
+        "privacyNote": "Classificação conservadora por vínculo direto ou indireto com pessoa natural; confirmar contexto B2B.",
+        "lineage": "Origem proposta: Operação comercial. Destino estrutural: pedido (persistência; consumo não documentado).",
+        "rbac": "Admin/Gerente: gestão; Operador: operação autorizada por escopo"
+      },
+      {
+        "name": "data_cancelamento",
+        "type": "DATETIME",
+        "definition": "NULL DEFAULT NULL",
+        "description": "Instante do cancelamento, coerente com situacao por CHECK.",
+        "privacy": "DP",
+        "privacyNote": "Classificação conservadora por vínculo direto ou indireto com pessoa natural; confirmar contexto B2B.",
+        "lineage": "Origem proposta: Operação comercial. Destino estrutural: pedido (persistência; consumo não documentado).",
+        "rbac": "Admin/Gerente: gestão; Operador: operação autorizada por escopo"
+      }
+    ],
+    "pk": [
+      "id_pedido"
+    ],
+    "uniques": [],
+    "fks": [
+      {
+        "name": "fk_pedido_cliente",
+        "columns": [
+          "id_cliente"
+        ],
+        "table": "cliente",
+        "refs": [
+          "id_cliente"
+        ],
+        "delete": "RESTRICT",
+        "update": "RESTRICT"
+      },
+      {
+        "name": "fk_pedido_usuario",
+        "columns": [
+          "id_usuario"
+        ],
+        "table": "usuario",
+        "refs": [
+          "id_usuario"
+        ],
+        "delete": "RESTRICT",
+        "update": "RESTRICT"
+      },
+      {
+        "name": "fk_pedido_endereco_cliente",
+        "columns": [
+          "id_endereco",
+          "id_cliente"
+        ],
+        "table": "endereco",
+        "refs": [
+          "id_endereco",
+          "id_cliente"
+        ],
+        "delete": "RESTRICT",
+        "update": "RESTRICT"
+      }
+    ],
+    "checks": [
+      {
+        "name": "ck_pedido_valores",
+        "expression": "valor_total >= 0 AND valor_desconto >= 0"
+      },
+      {
+        "name": "ck_pedido_finalizado_valor",
+        "expression": "situacao <> 'FINALIZADO' OR valor_total > 0"
+      },
+      {
+        "name": "ck_pedido_cancelamento",
+        "expression": "(situacao = 'CANCELADO' AND data_cancelamento IS NOT NULL) OR (situacao <> 'CANCELADO' AND data_cancelamento IS NULL)"
+      }
+    ],
+    "ddl": "\n  `id_pedido` INT NOT NULL AUTO_INCREMENT,\n  `id_cliente` INT NOT NULL,\n  `id_usuario` INT NOT NULL,\n  `id_endereco` INT NOT NULL,\n  `data_hora` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,\n  `situacao` ENUM('ABERTO', 'FINALIZADO', 'CANCELADO') NOT NULL DEFAULT 'ABERTO',\n  `forma_pagamento` VARCHAR(50) NOT NULL,\n  `valor_total` DECIMAL(10,2) NOT NULL DEFAULT 0.00,\n  `valor_desconto` DECIMAL(10,2) NOT NULL DEFAULT 0.00,\n  `data_cancelamento` DATETIME NULL DEFAULT NULL,\n  PRIMARY KEY (`id_pedido`),\n  INDEX `idx_pedido_cliente` (`id_cliente` ASC) VISIBLE,\n  INDEX `idx_pedido_usuario` (`id_usuario` ASC) VISIBLE,\n  INDEX `idx_pedido_data_hora` (`data_hora` ASC) VISIBLE,\n  INDEX `idx_pedido_endereco_cliente` (`id_endereco` ASC, `id_cliente` ASC) VISIBLE,\n  CONSTRAINT `fk_pedido_cliente`\n    FOREIGN KEY (`id_cliente`)\n    REFERENCES `dolly_vendas`.`cliente` (`id_cliente`)\n    ON DELETE RESTRICT\n    ON UPDATE RESTRICT,\n  CONSTRAINT `fk_pedido_usuario`\n    FOREIGN KEY (`id_usuario`)\n    REFERENCES `dolly_vendas`.`usuario` (`id_usuario`)\n    ON DELETE RESTRICT\n    ON UPDATE RESTRICT,\n  CONSTRAINT `fk_pedido_endereco_cliente`\n    FOREIGN KEY (`id_endereco` , `id_cliente`)\n    REFERENCES `dolly_vendas`.`endereco` (`id_endereco` , `id_cliente`)\n    ON DELETE RESTRICT\n    ON UPDATE RESTRICT",
+    "purpose": "Cabeçalho comercial, cliente, operador e endereço de entrega."
+  },
+  {
+    "name": "item_pedido",
+    "columns": [
+      {
+        "name": "id_item",
+        "type": "INT",
+        "definition": "NOT NULL AUTO_INCREMENT",
+        "description": "Identificador técnico do registro.",
+        "privacy": "DP",
+        "privacyNote": "Classificação conservadora por vínculo direto ou indireto com pessoa natural; confirmar contexto B2B.",
+        "lineage": "Origem proposta: geração MySQL (AUTO_INCREMENT). Destino estrutural: item_pedido_lote.id_item.",
+        "rbac": "Admin/Gerente: gestão; Operador: operação autorizada por escopo"
+      },
+      {
+        "name": "id_pedido",
+        "type": "INT",
+        "definition": "NOT NULL",
+        "description": "Referência ao registro relacionado.",
+        "privacy": "DP",
+        "privacyNote": "Classificação conservadora por vínculo direto ou indireto com pessoa natural; confirmar contexto B2B.",
+        "lineage": "Origem proposta: referência pedido.id_pedido. Destino estrutural: item_pedido (persistência; consumo não documentado).",
+        "rbac": "Admin/Gerente: gestão; Operador: operação autorizada por escopo"
+      },
+      {
+        "name": "id_produto",
+        "type": "INT",
+        "definition": "NOT NULL",
+        "description": "Referência ao registro relacionado.",
+        "privacy": "DP",
+        "privacyNote": "Classificação conservadora por vínculo direto ou indireto com pessoa natural; confirmar contexto B2B.",
+        "lineage": "Origem proposta: referência produto.id_produto. Destino estrutural: item_pedido_lote.id_produto.",
+        "rbac": "Admin/Gerente: gestão; Operador: operação autorizada por escopo"
+      },
+      {
+        "name": "id_promocao",
+        "type": "INT",
+        "definition": "NULL DEFAULT NULL",
+        "description": "Referência ao registro relacionado.",
+        "privacy": "DP",
+        "privacyNote": "Classificação conservadora por vínculo direto ou indireto com pessoa natural; confirmar contexto B2B.",
+        "lineage": "Origem proposta: referência promocao.id_promocao. Destino estrutural: item_pedido (persistência; consumo não documentado).",
+        "rbac": "Admin/Gerente: gestão; Operador: operação autorizada por escopo"
+      },
+      {
+        "name": "quantidade",
+        "type": "INT",
+        "definition": "NOT NULL",
+        "description": "Quantidade operacional; unidade fardo/unidade precisa de definição.",
+        "privacy": "DP",
+        "privacyNote": "Classificação conservadora por vínculo direto ou indireto com pessoa natural; confirmar contexto B2B.",
+        "lineage": "Origem proposta: Registro de itens da venda. Destino estrutural: item_pedido (persistência; consumo não documentado).",
+        "rbac": "Admin/Gerente: gestão; Operador: operação autorizada por escopo"
+      },
+      {
+        "name": "preco_unitario_venda",
+        "type": "DECIMAL(10,2)",
+        "definition": "NOT NULL",
+        "description": "Preço unitário persistido; congelamento não garantido no DDL.",
+        "privacy": "DP",
+        "privacyNote": "Classificação conservadora por vínculo direto ou indireto com pessoa natural; confirmar contexto B2B.",
+        "lineage": "Origem proposta: Registro de itens da venda. Destino estrutural: item_pedido (persistência; consumo não documentado).",
+        "rbac": "Admin/Gerente: gestão; Operador: operação autorizada por escopo"
+      }
+    ],
+    "pk": [
+      "id_item"
+    ],
+    "uniques": [
+      {
+        "name": "uk_item_produto",
+        "columns": [
+          "id_item",
+          "id_produto"
+        ]
+      }
+    ],
+    "fks": [
+      {
+        "name": "fk_item_pedido",
+        "columns": [
+          "id_pedido"
+        ],
+        "table": "pedido",
+        "refs": [
+          "id_pedido"
+        ],
+        "delete": "RESTRICT",
+        "update": "RESTRICT"
+      },
+      {
+        "name": "fk_item_produto",
+        "columns": [
+          "id_produto"
+        ],
+        "table": "produto",
+        "refs": [
+          "id_produto"
+        ],
+        "delete": "RESTRICT",
+        "update": "RESTRICT"
+      },
+      {
+        "name": "fk_item_promocao",
+        "columns": [
+          "id_promocao"
+        ],
+        "table": "promocao",
+        "refs": [
+          "id_promocao"
+        ],
+        "delete": "RESTRICT",
+        "update": "RESTRICT"
+      }
+    ],
+    "checks": [
+      {
+        "name": "ck_item_quantidade",
+        "expression": "quantidade > 0"
+      },
+      {
+        "name": "ck_item_preco",
+        "expression": "preco_unitario_venda > 0"
+      }
+    ],
+    "ddl": "\n  `id_item` INT NOT NULL AUTO_INCREMENT,\n  `id_pedido` INT NOT NULL,\n  `id_produto` INT NOT NULL,\n\n  `id_promocao` INT NULL DEFAULT NULL,\n  `quantidade` INT NOT NULL,\n  `preco_unitario_venda` DECIMAL(10,2) NOT NULL,\n  PRIMARY KEY (`id_item`),\n  UNIQUE INDEX `uk_item_produto` (`id_item` ASC, `id_produto` ASC) VISIBLE,\n  INDEX `idx_item_pedido` (`id_pedido` ASC) VISIBLE,\n  INDEX `idx_item_produto` (`id_produto` ASC) VISIBLE,\n  INDEX `idx_item_promocao` (`id_promocao` ASC) VISIBLE,\n  CONSTRAINT `fk_item_pedido`\n    FOREIGN KEY (`id_pedido`)\n    REFERENCES `dolly_vendas`.`pedido` (`id_pedido`)\n    ON DELETE RESTRICT\n    ON UPDATE RESTRICT,\n  CONSTRAINT `fk_item_produto`\n    FOREIGN KEY (`id_produto`)\n    REFERENCES `dolly_vendas`.`produto` (`id_produto`)\n    ON DELETE RESTRICT\n    ON UPDATE RESTRICT,\n  CONSTRAINT `fk_item_promocao`\n    FOREIGN KEY (`id_promocao`)\n    REFERENCES `dolly_vendas`.`promocao` (`id_promocao`)\n    ON DELETE RESTRICT\n    ON UPDATE RESTRICT",
+    "purpose": "Produtos, quantidades e preço persistido de cada pedido."
+  },
+  {
+    "name": "item_pedido_lote",
+    "columns": [
+      {
+        "name": "id_item_pedido_lote",
+        "type": "INT",
+        "definition": "NOT NULL AUTO_INCREMENT",
+        "description": "Identificador técnico do registro.",
+        "privacy": "DP",
+        "privacyNote": "Classificação conservadora por vínculo direto ou indireto com pessoa natural; confirmar contexto B2B.",
+        "lineage": "Origem proposta: geração MySQL (AUTO_INCREMENT). Destino estrutural: item_pedido_lote (persistência; consumo não documentado).",
+        "rbac": "Admin/Gerente: gestão; Operador: operação autorizada por escopo"
+      },
+      {
+        "name": "id_item",
+        "type": "INT",
+        "definition": "NOT NULL",
+        "description": "Referência ao registro relacionado.",
+        "privacy": "DP",
+        "privacyNote": "Classificação conservadora por vínculo direto ou indireto com pessoa natural; confirmar contexto B2B.",
+        "lineage": "Origem proposta: referência item_pedido.id_item. Destino estrutural: item_pedido_lote (persistência; consumo não documentado).",
+        "rbac": "Admin/Gerente: gestão; Operador: operação autorizada por escopo"
+      },
+      {
+        "name": "id_lote",
+        "type": "INT",
+        "definition": "NOT NULL",
+        "description": "Referência ao registro relacionado.",
+        "privacy": "DP",
+        "privacyNote": "Classificação conservadora por vínculo direto ou indireto com pessoa natural; confirmar contexto B2B.",
+        "lineage": "Origem proposta: referência lote.id_lote. Destino estrutural: item_pedido_lote (persistência; consumo não documentado).",
+        "rbac": "Admin/Gerente: gestão; Operador: operação autorizada por escopo"
+      },
+      {
+        "name": "id_produto",
+        "type": "INT",
+        "definition": "NOT NULL",
+        "description": "Referência ao registro relacionado.",
+        "privacy": "DP",
+        "privacyNote": "Classificação conservadora por vínculo direto ou indireto com pessoa natural; confirmar contexto B2B.",
+        "lineage": "Origem proposta: referência item_pedido.id_produto, lote.id_produto. Destino estrutural: item_pedido_lote (persistência; consumo não documentado).",
+        "rbac": "Admin/Gerente: gestão; Operador: operação autorizada por escopo"
+      },
+      {
+        "name": "quantidade",
+        "type": "INT",
+        "definition": "NOT NULL",
+        "description": "Quantidade operacional; unidade fardo/unidade precisa de definição.",
+        "privacy": "DP",
+        "privacyNote": "Classificação conservadora por vínculo direto ou indireto com pessoa natural; confirmar contexto B2B.",
+        "lineage": "Origem proposta: Alocação de estoque (automação não fornecida). Destino estrutural: item_pedido_lote (persistência; consumo não documentado).",
+        "rbac": "Admin/Gerente: gestão; Operador: operação autorizada por escopo"
+      },
+      {
+        "name": "quantidade_estornada",
+        "type": "INT",
+        "definition": "NOT NULL DEFAULT 0",
+        "description": "Quantidade já devolvida; evita excesso local, sem executar recomposição automática.",
+        "privacy": "DP",
+        "privacyNote": "Classificação conservadora por vínculo direto ou indireto com pessoa natural; confirmar contexto B2B.",
+        "lineage": "Origem proposta: Alocação de estoque (automação não fornecida). Destino estrutural: item_pedido_lote (persistência; consumo não documentado).",
+        "rbac": "Admin/Gerente: gestão; Operador: operação autorizada por escopo"
+      }
+    ],
+    "pk": [
+      "id_item_pedido_lote"
+    ],
+    "uniques": [
+      {
+        "name": "uk_item_lote",
+        "columns": [
+          "id_item",
+          "id_lote"
+        ]
+      }
+    ],
+    "fks": [
+      {
+        "name": "fk_alocacao_item",
+        "columns": [
+          "id_item",
+          "id_produto"
+        ],
+        "table": "item_pedido",
+        "refs": [
+          "id_item",
+          "id_produto"
+        ],
+        "delete": "RESTRICT",
+        "update": "RESTRICT"
+      },
+      {
+        "name": "fk_alocacao_lote",
+        "columns": [
+          "id_lote",
+          "id_produto"
+        ],
+        "table": "lote",
+        "refs": [
+          "id_lote",
+          "id_produto"
+        ],
+        "delete": "RESTRICT",
+        "update": "RESTRICT"
+      }
+    ],
+    "checks": [
+      {
+        "name": "ck_alocacao_quantidade",
+        "expression": "quantidade > 0"
+      },
+      {
+        "name": "ck_alocacao_estorno",
+        "expression": "quantidade_estornada >= 0 AND quantidade_estornada <= quantidade"
+      }
+    ],
+    "ddl": "\n  `id_item_pedido_lote` INT NOT NULL AUTO_INCREMENT,\n  `id_item` INT NOT NULL,\n  `id_lote` INT NOT NULL,\n  `id_produto` INT NOT NULL,\n  `quantidade` INT NOT NULL,\n  `quantidade_estornada` INT NOT NULL DEFAULT 0,\n  PRIMARY KEY (`id_item_pedido_lote`),\n  UNIQUE INDEX `uk_item_lote` (`id_item` ASC, `id_lote` ASC) VISIBLE,\n  INDEX `idx_alocacao_item_produto` (`id_item` ASC, `id_produto` ASC) VISIBLE,\n  INDEX `idx_alocacao_lote_produto` (`id_lote` ASC, `id_produto` ASC) VISIBLE,\n  CONSTRAINT `fk_alocacao_item`\n    FOREIGN KEY (`id_item` , `id_produto`)\n    REFERENCES `dolly_vendas`.`item_pedido` (`id_item` , `id_produto`)\n    ON DELETE RESTRICT\n    ON UPDATE RESTRICT,\n  CONSTRAINT `fk_alocacao_lote`\n    FOREIGN KEY (`id_lote` , `id_produto`)\n    REFERENCES `dolly_vendas`.`lote` (`id_lote` , `id_produto`)\n    ON DELETE RESTRICT\n    ON UPDATE RESTRICT",
+    "purpose": "Alocação e estorno de quantidades de um item em lotes do mesmo produto."
+  },
+  {
+    "name": "nota_fiscal",
+    "columns": [
+      {
+        "name": "id_nota_fiscal",
+        "type": "INT",
+        "definition": "NOT NULL AUTO_INCREMENT",
+        "description": "Identificador técnico do registro.",
+        "privacy": "DP",
+        "privacyNote": "Classificação conservadora por vínculo direto ou indireto com pessoa natural; confirmar contexto B2B.",
+        "lineage": "Origem proposta: geração MySQL (AUTO_INCREMENT). Destino estrutural: nota_fiscal (persistência; consumo não documentado).",
+        "rbac": "Admin/Gerente: gestão; Operador: operação autorizada por escopo"
+      },
+      {
+        "name": "id_pedido",
+        "type": "INT",
+        "definition": "NOT NULL",
+        "description": "Referência ao registro relacionado.",
+        "privacy": "DP",
+        "privacyNote": "Classificação conservadora por vínculo direto ou indireto com pessoa natural; confirmar contexto B2B.",
+        "lineage": "Origem proposta: referência pedido.id_pedido. Destino estrutural: nota_fiscal (persistência; consumo não documentado).",
+        "rbac": "Admin/Gerente: gestão; Operador: operação autorizada por escopo"
+      },
+      {
+        "name": "chave_acesso",
+        "type": "CHAR(44)",
+        "definition": "NOT NULL",
+        "description": "Chave fiscal de 44 caracteres; estrutura numérica não validada.",
+        "privacy": "DP",
+        "privacyNote": "Classificação conservadora por vínculo direto ou indireto com pessoa natural; confirmar contexto B2B.",
+        "lineage": "Origem proposta: Registro fiscal (integração não fornecida). Destino estrutural: nota_fiscal (persistência; consumo não documentado).",
+        "rbac": "Admin/Gerente: gestão; Operador: operação autorizada por escopo"
+      },
+      {
+        "name": "valor_total_nf",
+        "type": "DECIMAL(10,2)",
+        "definition": "NOT NULL",
+        "description": "Valor da nota; igualdade com total do pedido não garantida.",
+        "privacy": "DP",
+        "privacyNote": "Classificação conservadora por vínculo direto ou indireto com pessoa natural; confirmar contexto B2B.",
+        "lineage": "Origem proposta: Registro fiscal (integração não fornecida). Destino estrutural: nota_fiscal (persistência; consumo não documentado).",
+        "rbac": "Admin/Gerente: gestão; Operador: operação autorizada por escopo"
+      },
+      {
+        "name": "data_emissao",
+        "type": "DATETIME",
+        "definition": "NOT NULL",
+        "description": "Instante de emissão registrado.",
+        "privacy": "DP",
+        "privacyNote": "Classificação conservadora por vínculo direto ou indireto com pessoa natural; confirmar contexto B2B.",
+        "lineage": "Origem proposta: Registro fiscal (integração não fornecida). Destino estrutural: nota_fiscal (persistência; consumo não documentado).",
+        "rbac": "Admin/Gerente: gestão; Operador: operação autorizada por escopo"
+      }
+    ],
+    "pk": [
+      "id_nota_fiscal"
+    ],
+    "uniques": [
+      {
+        "name": "uk_nf_chave",
+        "columns": [
+          "chave_acesso"
+        ]
+      },
+      {
+        "name": "uk_nf_pedido",
+        "columns": [
+          "id_pedido"
+        ]
+      }
+    ],
+    "fks": [
+      {
+        "name": "fk_nf_pedido",
+        "columns": [
+          "id_pedido"
+        ],
+        "table": "pedido",
+        "refs": [
+          "id_pedido"
+        ],
+        "delete": "RESTRICT",
+        "update": "RESTRICT"
+      }
+    ],
+    "checks": [
+      {
+        "name": "ck_nf_valor",
+        "expression": "valor_total_nf > 0"
+      }
+    ],
+    "ddl": "\n  `id_nota_fiscal` INT NOT NULL AUTO_INCREMENT,\n  `id_pedido` INT NOT NULL,\n  `chave_acesso` CHAR(44) NOT NULL,\n  `valor_total_nf` DECIMAL(10,2) NOT NULL,\n  `data_emissao` DATETIME NOT NULL,\n  PRIMARY KEY (`id_nota_fiscal`),\n  UNIQUE INDEX `uk_nf_chave` (`chave_acesso` ASC) VISIBLE,\n  UNIQUE INDEX `uk_nf_pedido` (`id_pedido` ASC) VISIBLE,\n  CONSTRAINT `fk_nf_pedido`\n    FOREIGN KEY (`id_pedido`)\n    REFERENCES `dolly_vendas`.`pedido` (`id_pedido`)\n    ON DELETE RESTRICT\n    ON UPDATE RESTRICT",
+    "purpose": "Metadados da nota fiscal vinculada a um pedido."
+  },
+  {
+    "name": "conta_receber",
+    "columns": [
+      {
+        "name": "id_conta",
+        "type": "INT",
+        "definition": "NOT NULL AUTO_INCREMENT",
+        "description": "Identificador técnico do registro.",
+        "privacy": "DP",
+        "privacyNote": "Classificação conservadora por vínculo direto ou indireto com pessoa natural; confirmar contexto B2B.",
+        "lineage": "Origem proposta: geração MySQL (AUTO_INCREMENT). Destino estrutural: conta_receber (persistência; consumo não documentado).",
+        "rbac": "Admin/Gerente: gestão; Operador: operação autorizada por escopo"
+      },
+      {
+        "name": "id_pedido",
+        "type": "INT",
+        "definition": "NOT NULL",
+        "description": "Referência ao registro relacionado.",
+        "privacy": "DP",
+        "privacyNote": "Classificação conservadora por vínculo direto ou indireto com pessoa natural; confirmar contexto B2B.",
+        "lineage": "Origem proposta: referência pedido.id_pedido. Destino estrutural: conta_receber (persistência; consumo não documentado).",
+        "rbac": "Admin/Gerente: gestão; Operador: operação autorizada por escopo"
+      },
+      {
+        "name": "numero_parcela",
+        "type": "INT",
+        "definition": "NOT NULL",
+        "description": "Número da parcela; único por pedido.",
+        "privacy": "DP",
+        "privacyNote": "Classificação conservadora por vínculo direto ou indireto com pessoa natural; confirmar contexto B2B.",
+        "lineage": "Origem proposta: Operação financeira. Destino estrutural: conta_receber (persistência; consumo não documentado).",
+        "rbac": "Admin/Gerente: gestão; Operador: operação autorizada por escopo"
+      },
+      {
+        "name": "valor_parcela",
+        "type": "DECIMAL(10,2)",
+        "definition": "NOT NULL",
+        "description": "Valor financeiro da parcela.",
+        "privacy": "DP",
+        "privacyNote": "Classificação conservadora por vínculo direto ou indireto com pessoa natural; confirmar contexto B2B.",
+        "lineage": "Origem proposta: Operação financeira. Destino estrutural: conta_receber (persistência; consumo não documentado).",
+        "rbac": "Admin/Gerente: gestão; Operador: operação autorizada por escopo"
+      },
+      {
+        "name": "data_vencimento",
+        "type": "DATE",
+        "definition": "NOT NULL",
+        "description": "Vencimento da parcela.",
+        "privacy": "DP",
+        "privacyNote": "Classificação conservadora por vínculo direto ou indireto com pessoa natural; confirmar contexto B2B.",
+        "lineage": "Origem proposta: Operação financeira. Destino estrutural: conta_receber (persistência; consumo não documentado).",
+        "rbac": "Admin/Gerente: gestão; Operador: operação autorizada por escopo"
+      },
+      {
+        "name": "status_parcela",
+        "type": "ENUM('PENDENTE', 'PAGO', 'CANCELADO')",
+        "definition": "NOT NULL DEFAULT 'PENDENTE'",
+        "description": "Situação da parcela conforme ENUM.",
+        "privacy": "DP",
+        "privacyNote": "Classificação conservadora por vínculo direto ou indireto com pessoa natural; confirmar contexto B2B.",
+        "lineage": "Origem proposta: Operação financeira. Destino estrutural: conta_receber (persistência; consumo não documentado).",
+        "rbac": "Admin/Gerente: gestão; Operador: operação autorizada por escopo"
+      }
+    ],
+    "pk": [
+      "id_conta"
+    ],
+    "uniques": [
+      {
+        "name": "uk_conta_pedido_parcela",
+        "columns": [
+          "id_pedido",
+          "numero_parcela"
+        ]
+      }
+    ],
+    "fks": [
+      {
+        "name": "fk_conta_pedido",
+        "columns": [
+          "id_pedido"
+        ],
+        "table": "pedido",
+        "refs": [
+          "id_pedido"
+        ],
+        "delete": "RESTRICT",
+        "update": "RESTRICT"
+      }
+    ],
+    "checks": [
+      {
+        "name": "ck_conta_numero",
+        "expression": "numero_parcela > 0"
+      },
+      {
+        "name": "ck_conta_valor",
+        "expression": "valor_parcela > 0"
+      }
+    ],
+    "ddl": "\n  `id_conta` INT NOT NULL AUTO_INCREMENT,\n  `id_pedido` INT NOT NULL,\n  `numero_parcela` INT NOT NULL,\n  `valor_parcela` DECIMAL(10,2) NOT NULL,\n  `data_vencimento` DATE NOT NULL,\n  `status_parcela` ENUM('PENDENTE', 'PAGO', 'CANCELADO') NOT NULL DEFAULT 'PENDENTE',\n  PRIMARY KEY (`id_conta`),\n  UNIQUE INDEX `uk_conta_pedido_parcela` (`id_pedido` ASC, `numero_parcela` ASC) VISIBLE,\n  INDEX `idx_conta_status_vencimento` (`status_parcela` ASC, `data_vencimento` ASC) VISIBLE,\n  CONSTRAINT `fk_conta_pedido`\n    FOREIGN KEY (`id_pedido`)\n    REFERENCES `dolly_vendas`.`pedido` (`id_pedido`)\n    ON DELETE RESTRICT\n    ON UPDATE RESTRICT",
+    "purpose": "Parcelas e vencimentos do pedido."
+  },
+  {
+    "name": "pagamento",
+    "columns": [
+      {
+        "name": "id_pagamento",
+        "type": "INT",
+        "definition": "NOT NULL AUTO_INCREMENT",
+        "description": "Identificador técnico do registro.",
+        "privacy": "DP",
+        "privacyNote": "Classificação conservadora por vínculo direto ou indireto com pessoa natural; confirmar contexto B2B.",
+        "lineage": "Origem proposta: geração MySQL (AUTO_INCREMENT). Destino estrutural: pagamento (persistência; consumo não documentado).",
+        "rbac": "Admin/Gerente: gestão; Operador: operação autorizada por escopo"
+      },
+      {
+        "name": "id_pedido",
+        "type": "INT",
+        "definition": "NOT NULL",
+        "description": "Referência ao registro relacionado.",
+        "privacy": "DP",
+        "privacyNote": "Classificação conservadora por vínculo direto ou indireto com pessoa natural; confirmar contexto B2B.",
+        "lineage": "Origem proposta: referência pedido.id_pedido. Destino estrutural: pagamento (persistência; consumo não documentado).",
+        "rbac": "Admin/Gerente: gestão; Operador: operação autorizada por escopo"
+      },
+      {
+        "name": "forma_pagamento",
+        "type": "ENUM('BOLETO', 'PIX', 'CARTAO')",
+        "definition": "NOT NULL",
+        "description": "Forma de pagamento; domínio de pedido é texto e difere do ENUM de pagamento.",
+        "privacy": "DP",
+        "privacyNote": "Classificação conservadora por vínculo direto ou indireto com pessoa natural; confirmar contexto B2B.",
+        "lineage": "Origem proposta: Registro de transação financeira. Destino estrutural: pagamento (persistência; consumo não documentado).",
+        "rbac": "Admin/Gerente: gestão; Operador: operação autorizada por escopo"
+      },
+      {
+        "name": "valor_pago",
+        "type": "DECIMAL(10,2)",
+        "definition": "NOT NULL",
+        "description": "Valor da transação; soma e liquidação não reconciliadas pelo DDL.",
+        "privacy": "DP",
+        "privacyNote": "Classificação conservadora por vínculo direto ou indireto com pessoa natural; confirmar contexto B2B.",
+        "lineage": "Origem proposta: Registro de transação financeira. Destino estrutural: pagamento (persistência; consumo não documentado).",
+        "rbac": "Admin/Gerente: gestão; Operador: operação autorizada por escopo"
+      },
+      {
+        "name": "status_pagamento",
+        "type": "ENUM('PENDENTE', 'CONFIRMADO', 'CANCELADO', 'ESTORNADO')",
+        "definition": "NOT NULL DEFAULT 'PENDENTE'",
+        "description": "Estado da transação conforme ENUM.",
+        "privacy": "DP",
+        "privacyNote": "Classificação conservadora por vínculo direto ou indireto com pessoa natural; confirmar contexto B2B.",
+        "lineage": "Origem proposta: Registro de transação financeira. Destino estrutural: pagamento (persistência; consumo não documentado).",
+        "rbac": "Admin/Gerente: gestão; Operador: operação autorizada por escopo"
+      },
+      {
+        "name": "data_transacao",
+        "type": "DATETIME",
+        "definition": "NOT NULL DEFAULT CURRENT_TIMESTAMP",
+        "description": "Instante da transação financeira.",
+        "privacy": "DP",
+        "privacyNote": "Classificação conservadora por vínculo direto ou indireto com pessoa natural; confirmar contexto B2B.",
+        "lineage": "Origem proposta: Registro de transação financeira. Destino estrutural: pagamento (persistência; consumo não documentado).",
+        "rbac": "Admin/Gerente: gestão; Operador: operação autorizada por escopo"
+      }
+    ],
+    "pk": [
+      "id_pagamento"
+    ],
+    "uniques": [],
+    "fks": [
+      {
+        "name": "fk_pagamento_pedido",
+        "columns": [
+          "id_pedido"
+        ],
+        "table": "pedido",
+        "refs": [
+          "id_pedido"
+        ],
+        "delete": "RESTRICT",
+        "update": "RESTRICT"
+      }
+    ],
+    "checks": [
+      {
+        "name": "ck_pagamento_valor",
+        "expression": "valor_pago > 0"
+      }
+    ],
+    "ddl": "\n  `id_pagamento` INT NOT NULL AUTO_INCREMENT,\n  `id_pedido` INT NOT NULL,\n  `forma_pagamento` ENUM('BOLETO', 'PIX', 'CARTAO') NOT NULL,\n  `valor_pago` DECIMAL(10,2) NOT NULL,\n  `status_pagamento` ENUM('PENDENTE', 'CONFIRMADO', 'CANCELADO', 'ESTORNADO') NOT NULL DEFAULT 'PENDENTE',\n\n  `data_transacao` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,\n  PRIMARY KEY (`id_pagamento`),\n  INDEX `idx_pagamento_pedido` (`id_pedido` ASC) VISIBLE,\n  CONSTRAINT `fk_pagamento_pedido`\n    FOREIGN KEY (`id_pedido`)\n    REFERENCES `dolly_vendas`.`pedido` (`id_pedido`)\n    ON DELETE RESTRICT\n    ON UPDATE RESTRICT",
+    "purpose": "Transações de pagamento vinculadas ao pedido."
+  },
+  {
+    "name": "entrega",
+    "columns": [
+      {
+        "name": "id_entrega",
+        "type": "INT",
+        "definition": "NOT NULL AUTO_INCREMENT",
+        "description": "Identificador técnico do registro.",
+        "privacy": "DP",
+        "privacyNote": "Classificação conservadora por vínculo direto ou indireto com pessoa natural; confirmar contexto B2B.",
+        "lineage": "Origem proposta: geração MySQL (AUTO_INCREMENT). Destino estrutural: entrega (persistência; consumo não documentado).",
+        "rbac": "Admin/Gerente: gestão; Operador: operação autorizada por escopo"
+      },
+      {
+        "name": "id_pedido",
+        "type": "INT",
+        "definition": "NOT NULL",
+        "description": "Referência ao registro relacionado.",
+        "privacy": "DP",
+        "privacyNote": "Classificação conservadora por vínculo direto ou indireto com pessoa natural; confirmar contexto B2B.",
+        "lineage": "Origem proposta: referência pedido.id_pedido. Destino estrutural: comprovante_entrega.id_pedido.",
+        "rbac": "Admin/Gerente: gestão; Operador: operação autorizada por escopo"
+      },
+      {
+        "name": "id_usuario_motorista",
+        "type": "INT",
+        "definition": "NOT NULL",
+        "description": "Referência ao registro relacionado.",
+        "privacy": "DP",
+        "privacyNote": "Classificação conservadora por vínculo direto ou indireto com pessoa natural; confirmar contexto B2B.",
+        "lineage": "Origem proposta: referência usuario.id_usuario. Destino estrutural: entrega (persistência; consumo não documentado).",
+        "rbac": "Admin/Gerente: gestão; Operador: operação autorizada por escopo"
+      },
+      {
+        "name": "status_entrega",
+        "type": "ENUM('PENDENTE', 'EM_ROTA', 'CONCLUIDA')",
+        "definition": "NOT NULL DEFAULT 'PENDENTE'",
+        "description": "Estado logístico; conclusão exige data_realizada.",
+        "privacy": "DP",
+        "privacyNote": "Classificação conservadora por vínculo direto ou indireto com pessoa natural; confirmar contexto B2B.",
+        "lineage": "Origem proposta: Operação logística. Destino estrutural: entrega (persistência; consumo não documentado).",
+        "rbac": "Admin/Gerente: gestão; Operador: operação autorizada por escopo"
+      },
+      {
+        "name": "data_prevista",
+        "type": "DATE",
+        "definition": "NOT NULL",
+        "description": "Data prevista para entrega.",
+        "privacy": "DP",
+        "privacyNote": "Classificação conservadora por vínculo direto ou indireto com pessoa natural; confirmar contexto B2B.",
+        "lineage": "Origem proposta: Operação logística. Destino estrutural: entrega (persistência; consumo não documentado).",
+        "rbac": "Admin/Gerente: gestão; Operador: operação autorizada por escopo"
+      },
+      {
+        "name": "data_realizada",
+        "type": "DATETIME",
+        "definition": "NULL DEFAULT NULL",
+        "description": "Instante real; somente preenchido quando CONCLUIDA.",
+        "privacy": "DP",
+        "privacyNote": "Classificação conservadora por vínculo direto ou indireto com pessoa natural; confirmar contexto B2B.",
+        "lineage": "Origem proposta: Operação logística. Destino estrutural: entrega (persistência; consumo não documentado).",
+        "rbac": "Admin/Gerente: gestão; Operador: operação autorizada por escopo"
+      }
+    ],
+    "pk": [
+      "id_entrega"
+    ],
+    "uniques": [
+      {
+        "name": "uk_entrega_pedido",
+        "columns": [
+          "id_pedido"
+        ]
+      }
+    ],
+    "fks": [
+      {
+        "name": "fk_entrega_pedido",
+        "columns": [
+          "id_pedido"
+        ],
+        "table": "pedido",
+        "refs": [
+          "id_pedido"
+        ],
+        "delete": "RESTRICT",
+        "update": "RESTRICT"
+      },
+      {
+        "name": "fk_entrega_motorista",
+        "columns": [
+          "id_usuario_motorista"
+        ],
+        "table": "usuario",
+        "refs": [
+          "id_usuario"
+        ],
+        "delete": "RESTRICT",
+        "update": "RESTRICT"
+      }
+    ],
+    "checks": [
+      {
+        "name": "ck_entrega_conclusao",
+        "expression": "(status_entrega = 'CONCLUIDA' AND data_realizada IS NOT NULL) OR (status_entrega <> 'CONCLUIDA' AND data_realizada IS NULL)"
+      }
+    ],
+    "ddl": "\n  `id_entrega` INT NOT NULL AUTO_INCREMENT,\n  `id_pedido` INT NOT NULL,\n  `id_usuario_motorista` INT NOT NULL,\n  `status_entrega` ENUM('PENDENTE', 'EM_ROTA', 'CONCLUIDA') NOT NULL DEFAULT 'PENDENTE',\n  `data_prevista` DATE NOT NULL,\n  `data_realizada` DATETIME NULL DEFAULT NULL,\n  PRIMARY KEY (`id_entrega`),\n  UNIQUE INDEX `uk_entrega_pedido` (`id_pedido` ASC) VISIBLE,\n  INDEX `idx_entrega_motorista` (`id_usuario_motorista` ASC) VISIBLE,\n  INDEX `idx_entrega_status_data` (`status_entrega` ASC, `data_prevista` ASC) VISIBLE,\n  CONSTRAINT `fk_entrega_pedido`\n    FOREIGN KEY (`id_pedido`)\n    REFERENCES `dolly_vendas`.`pedido` (`id_pedido`)\n    ON DELETE RESTRICT\n    ON UPDATE RESTRICT,\n  CONSTRAINT `fk_entrega_motorista`\n    FOREIGN KEY (`id_usuario_motorista`)\n    REFERENCES `dolly_vendas`.`usuario` (`id_usuario`)\n    ON DELETE RESTRICT\n    ON UPDATE RESTRICT",
+    "purpose": "Programação e realização da entrega por motorista."
+  },
+  {
+    "name": "comprovante_entrega",
+    "columns": [
+      {
+        "name": "id_comprovante",
+        "type": "INT",
+        "definition": "NOT NULL AUTO_INCREMENT",
+        "description": "Identificador técnico do registro.",
+        "privacy": "DP",
+        "privacyNote": "Classificação conservadora por vínculo direto ou indireto com pessoa natural; confirmar contexto B2B.",
+        "lineage": "Origem proposta: geração MySQL (AUTO_INCREMENT). Destino estrutural: comprovante_entrega (persistência; consumo não documentado).",
+        "rbac": "Admin/Gerente: gestão; Operador: operação autorizada por escopo"
+      },
+      {
+        "name": "id_pedido",
+        "type": "INT",
+        "definition": "NOT NULL",
+        "description": "Referência ao registro relacionado.",
+        "privacy": "DP",
+        "privacyNote": "Classificação conservadora por vínculo direto ou indireto com pessoa natural; confirmar contexto B2B.",
+        "lineage": "Origem proposta: referência entrega.id_pedido. Destino estrutural: comprovante_entrega (persistência; consumo não documentado).",
+        "rbac": "Admin/Gerente: gestão; Operador: operação autorizada por escopo"
+      },
+      {
+        "name": "assinatura_digital_canhoto",
+        "type": "TEXT",
+        "definition": "NOT NULL",
+        "description": "Conteúdo da assinatura/canhoto. DP por padrão; DPS somente se houver biometria vinculada à pessoa, a confirmar.",
+        "privacy": "DP",
+        "privacyNote": "DP; DPS condicional ao conteúdo biométrico/sensível. Não confirmado pela tipagem.",
+        "lineage": "Origem proposta: Confirmação logística. Destino estrutural: comprovante_entrega (persistência; consumo não documentado).",
+        "rbac": "Admin/Gerente: gestão; Operador: operação autorizada por escopo"
+      },
+      {
+        "name": "data_registro",
+        "type": "DATETIME",
+        "definition": "NOT NULL DEFAULT CURRENT_TIMESTAMP",
+        "description": "Instante de registro do comprovante.",
+        "privacy": "DP",
+        "privacyNote": "Classificação conservadora por vínculo direto ou indireto com pessoa natural; confirmar contexto B2B.",
+        "lineage": "Origem proposta: Confirmação logística. Destino estrutural: comprovante_entrega (persistência; consumo não documentado).",
+        "rbac": "Admin/Gerente: gestão; Operador: operação autorizada por escopo"
+      }
+    ],
+    "pk": [
+      "id_comprovante"
+    ],
+    "uniques": [
+      {
+        "name": "uk_comprovante_pedido",
+        "columns": [
+          "id_pedido"
+        ]
+      }
+    ],
+    "fks": [
+      {
+        "name": "fk_comprovante_entrega",
+        "columns": [
+          "id_pedido"
+        ],
+        "table": "entrega",
+        "refs": [
+          "id_pedido"
+        ],
+        "delete": "RESTRICT",
+        "update": "RESTRICT"
+      }
+    ],
+    "checks": [],
+    "ddl": "\n  `id_comprovante` INT NOT NULL AUTO_INCREMENT,\n  `id_pedido` INT NOT NULL,\n  `assinatura_digital_canhoto` TEXT NOT NULL,\n  `data_registro` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,\n  PRIMARY KEY (`id_comprovante`),\n  UNIQUE INDEX `uk_comprovante_pedido` (`id_pedido` ASC) VISIBLE,\n  CONSTRAINT `fk_comprovante_entrega`\n    FOREIGN KEY (`id_pedido`)\n    REFERENCES `dolly_vendas`.`entrega` (`id_pedido`)\n    ON DELETE RESTRICT\n    ON UPDATE RESTRICT",
+    "purpose": "Canhoto de comprovação vinculado à entrega por id_pedido."
+  },
+  {
+    "name": "estorno",
+    "columns": [
+      {
+        "name": "id_estorno",
+        "type": "INT",
+        "definition": "NOT NULL AUTO_INCREMENT",
+        "description": "Identificador técnico do registro.",
+        "privacy": "DP",
+        "privacyNote": "Classificação conservadora por vínculo direto ou indireto com pessoa natural; confirmar contexto B2B.",
+        "lineage": "Origem proposta: geração MySQL (AUTO_INCREMENT). Destino estrutural: estorno (persistência; consumo não documentado).",
+        "rbac": "Admin/Gerente: gestão; Operador: operação autorizada por escopo"
+      },
+      {
+        "name": "id_pedido",
+        "type": "INT",
+        "definition": "NOT NULL",
+        "description": "Referência ao registro relacionado.",
+        "privacy": "DP",
+        "privacyNote": "Classificação conservadora por vínculo direto ou indireto com pessoa natural; confirmar contexto B2B.",
+        "lineage": "Origem proposta: referência pedido.id_pedido. Destino estrutural: estorno (persistência; consumo não documentado).",
+        "rbac": "Admin/Gerente: gestão; Operador: operação autorizada por escopo"
+      },
+      {
+        "name": "motivo",
+        "type": "TEXT",
+        "definition": "NOT NULL",
+        "description": "Justificativa do estorno; texto livre pode conter dados pessoais, evitar conteúdo excessivo.",
+        "privacy": "DP",
+        "privacyNote": "Classificação conservadora por vínculo direto ou indireto com pessoa natural; confirmar contexto B2B.",
+        "lineage": "Origem proposta: Cancelamento autorizado. Destino estrutural: estorno (persistência; consumo não documentado).",
+        "rbac": "Admin/Gerente: gestão; Operador: operação autorizada por escopo"
+      },
+      {
+        "name": "data_estorno",
+        "type": "DATETIME",
+        "definition": "NOT NULL DEFAULT CURRENT_TIMESTAMP",
+        "description": "Instante de registro do estorno.",
+        "privacy": "DP",
+        "privacyNote": "Classificação conservadora por vínculo direto ou indireto com pessoa natural; confirmar contexto B2B.",
+        "lineage": "Origem proposta: Cancelamento autorizado. Destino estrutural: estorno (persistência; consumo não documentado).",
+        "rbac": "Admin/Gerente: gestão; Operador: operação autorizada por escopo"
+      }
+    ],
+    "pk": [
+      "id_estorno"
+    ],
+    "uniques": [
+      {
+        "name": "uk_estorno_pedido",
+        "columns": [
+          "id_pedido"
+        ]
+      }
+    ],
+    "fks": [
+      {
+        "name": "fk_estorno_pedido",
+        "columns": [
+          "id_pedido"
+        ],
+        "table": "pedido",
+        "refs": [
+          "id_pedido"
+        ],
+        "delete": "RESTRICT",
+        "update": "RESTRICT"
+      }
+    ],
+    "checks": [],
+    "ddl": "\n  `id_estorno` INT NOT NULL AUTO_INCREMENT,\n  `id_pedido` INT NOT NULL,\n  `motivo` TEXT NOT NULL,\n  `data_estorno` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,\n  PRIMARY KEY (`id_estorno`),\n  UNIQUE INDEX `uk_estorno_pedido` (`id_pedido` ASC) VISIBLE,\n  CONSTRAINT `fk_estorno_pedido`\n    FOREIGN KEY (`id_pedido`)\n    REFERENCES `dolly_vendas`.`pedido` (`id_pedido`)\n    ON DELETE RESTRICT\n    ON UPDATE RESTRICT",
+    "purpose": "Motivo e data do estorno por pedido."
+  },
+  {
+    "name": "log_auditoria",
+    "columns": [
+      {
+        "name": "id_log",
+        "type": "INT",
+        "definition": "NOT NULL AUTO_INCREMENT",
+        "description": "Identificador técnico do registro.",
+        "privacy": "DP",
+        "privacyNote": "Classificação conservadora por vínculo direto ou indireto com pessoa natural; confirmar contexto B2B.",
+        "lineage": "Origem proposta: geração MySQL (AUTO_INCREMENT). Destino estrutural: log_auditoria (persistência; consumo não documentado).",
+        "rbac": "Admin: leitura de auditoria; serviço: inclusão; demais: negado"
+      },
+      {
+        "name": "id_usuario",
+        "type": "INT",
+        "definition": "NOT NULL",
+        "description": "Referência ao registro relacionado.",
+        "privacy": "DP",
+        "privacyNote": "Classificação conservadora por vínculo direto ou indireto com pessoa natural; confirmar contexto B2B.",
+        "lineage": "Origem proposta: referência usuario.id_usuario. Destino estrutural: log_auditoria (persistência; consumo não documentado).",
+        "rbac": "Admin: leitura de auditoria; serviço: inclusão; demais: negado"
+      },
+      {
+        "name": "tabela_afetada",
+        "type": "VARCHAR(100)",
+        "definition": "NOT NULL",
+        "description": "Nome da tabela auditada; sem FK de metadados.",
+        "privacy": "DP",
+        "privacyNote": "Classificação conservadora por vínculo direto ou indireto com pessoa natural; confirmar contexto B2B.",
+        "lineage": "Origem proposta: Aplicação ou gatilhos de auditoria (não fornecidos). Destino estrutural: log_auditoria (persistência; consumo não documentado).",
+        "rbac": "Admin: leitura de auditoria; serviço: inclusão; demais: negado"
+      },
+      {
+        "name": "operacao",
+        "type": "VARCHAR(20)",
+        "definition": "NOT NULL",
+        "description": "Operação auditada, restrita por CHECK.",
+        "privacy": "DP",
+        "privacyNote": "Classificação conservadora por vínculo direto ou indireto com pessoa natural; confirmar contexto B2B.",
+        "lineage": "Origem proposta: Aplicação ou gatilhos de auditoria (não fornecidos). Destino estrutural: log_auditoria (persistência; consumo não documentado).",
+        "rbac": "Admin: leitura de auditoria; serviço: inclusão; demais: negado"
+      },
+      {
+        "name": "data_hora",
+        "type": "TIMESTAMP",
+        "definition": "NOT NULL DEFAULT CURRENT_TIMESTAMP",
+        "description": "Instante do registro; DEFAULT não impede edição posterior.",
+        "privacy": "DP",
+        "privacyNote": "Classificação conservadora por vínculo direto ou indireto com pessoa natural; confirmar contexto B2B.",
+        "lineage": "Origem proposta: Aplicação ou gatilhos de auditoria (não fornecidos). Destino estrutural: log_auditoria (persistência; consumo não documentado).",
+        "rbac": "Admin: leitura de auditoria; serviço: inclusão; demais: negado"
+      },
+      {
+        "name": "valor_anterior",
+        "type": "JSON",
+        "definition": "NULL DEFAULT NULL",
+        "description": "Estado anterior em JSON; conteúdo pode incluir DP/DPS. Proibir senhas e segredos.",
+        "privacy": "DP",
+        "privacyNote": "DP; DPS condicional ao conteúdo biométrico/sensível. Não confirmado pela tipagem.",
+        "lineage": "Origem proposta: Aplicação ou gatilhos de auditoria (não fornecidos). Destino estrutural: log_auditoria (persistência; consumo não documentado).",
+        "rbac": "Admin: leitura de auditoria; serviço: inclusão; demais: negado"
+      },
+      {
+        "name": "valor_novo",
+        "type": "JSON",
+        "definition": "NULL DEFAULT NULL",
+        "description": "Estado posterior em JSON; conteúdo pode incluir DP/DPS. Aplicar minimização.",
+        "privacy": "DP",
+        "privacyNote": "DP; DPS condicional ao conteúdo biométrico/sensível. Não confirmado pela tipagem.",
+        "lineage": "Origem proposta: Aplicação ou gatilhos de auditoria (não fornecidos). Destino estrutural: log_auditoria (persistência; consumo não documentado).",
+        "rbac": "Admin: leitura de auditoria; serviço: inclusão; demais: negado"
+      }
+    ],
+    "pk": [
+      "id_log"
+    ],
+    "uniques": [],
+    "fks": [
+      {
+        "name": "fk_log_usuario",
+        "columns": [
+          "id_usuario"
+        ],
+        "table": "usuario",
+        "refs": [
+          "id_usuario"
+        ],
+        "delete": "RESTRICT",
+        "update": "RESTRICT"
+      }
+    ],
+    "checks": [
+      {
+        "name": "ck_log_operacao",
+        "expression": "operacao IN ('INSERT','UPDATE','DELETE')"
+      }
+    ],
+    "ddl": "\n  `id_log` INT NOT NULL AUTO_INCREMENT,\n  `id_usuario` INT NOT NULL,\n  `tabela_afetada` VARCHAR(100) NOT NULL,\n  `operacao` VARCHAR(20) NOT NULL,\n  `data_hora` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,\n  `valor_anterior` JSON NULL DEFAULT NULL,\n  `valor_novo` JSON NULL DEFAULT NULL,\n  PRIMARY KEY (`id_log`),\n  INDEX `idx_log_usuario` (`id_usuario` ASC) VISIBLE,\n  INDEX `idx_log_tabela_data` (`tabela_afetada` ASC, `data_hora` ASC) VISIBLE,\n  CONSTRAINT `fk_log_usuario`\n    FOREIGN KEY (`id_usuario`)\n    REFERENCES `dolly_vendas`.`usuario` (`id_usuario`)\n    ON DELETE RESTRICT\n    ON UPDATE RESTRICT",
+    "purpose": "Estrutura de rastreabilidade das alterações de dados."
+  }
+]

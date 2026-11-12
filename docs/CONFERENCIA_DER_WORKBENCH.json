@@ -1,0 +1,19 @@
+{
+  "data": "2026-11-10",
+  "origem": "MySQL Workbench 8.0.47; File > Export > Export as PNG, com diagrama ativo",
+  "exportacao_confirmada": true,
+  "dimensoes_png": [
+    3160,
+    1820
+  ],
+  "tabelas": 19,
+  "colunas": 115,
+  "relacionamentos": 21,
+  "conferencia": "Nomes, tipos, nulabilidade e mapeamentos das FKs comparados ao catálogo do DDL. Imagem inspecionada: todas as 19 tabelas visíveis.",
+  "limite": "O PNG não exibe todas as constraints. O DDL original permanece a referência para CHECKs, valores de ENUM, defaults e regras físicas completas.",
+  "sha256": {
+    "der.png": "33100f8bc443307b7d63e3377bd55d4ec48ab0474784b4cdfe12367178673556",
+    "dolly_vendas.mwb": "d3a71fef10caf9f39fdfe71ce9b3acdd9a36359edaa7fab1424ec889f1951807",
+    "ddl_original.sql": "4a3d9111a7d2d3f146d9888c79b23701057296df79a027c330ed7b6cdd2d4897"
+  }
+}
